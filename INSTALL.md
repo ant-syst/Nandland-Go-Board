@@ -59,7 +59,30 @@ sudo apt install libfontconfig1:i386
 sudo apt install libglib2.0-0:i386
 ```
 
-Create a symbolic link to replace the libpng12.so.0 library, which is 
+The required version of libpng (libpng-1.2.7) is not available on Ubuntu 
+19.04.
+
+We could either compile the missing version of libpng or create a 
+symbolic link to replace the unavailable libpng12.so.0 library by the 
+current library version (libpng16). The last solution allows to run the 
+software, but, unfortunately, does not works leading to missing icons.
+
+* Compilation 
+
+```bash
+wget https://sourceforge.net/projects/gnuwin32/files/libpng/1.2.7/libpng-1.2.7-src.zip/download
+unzip download
+cd src/libpng/1.2.7/libpng-1.2.7
+sudo apt install zlib1g-dev
+cp scripts/makefile.linux .
+# Update CFLAGS to add -m32 flags
+# Update all CC lines to add -m32 flags
+make -f makefile.linux
+sudo cp libpng*so* //lib/i386-linux-gnu/
+
+```
+
+* Create a symbolic link to replace the libpng12.so.0 library, which is 
 not available, by the libpng16.so.
 
 ```bash
