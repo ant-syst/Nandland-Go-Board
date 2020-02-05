@@ -114,3 +114,18 @@ git clone https://github.com/cliffordwolf/icestorm.git icestorm
 cd icestorm
 make -j4
 ```
+
+## Install GHDL on archlinux ##
+
+```bash
+sudo pacman -S gcc-ada
+```
+
+```bash
+git clone https://github.com/ghdl/ghdl.git ghdl_src
+mkdir ghdl_install/
+cd ./ghdl_src/
+./configure --prefix=/ghdl_install_path
+make
+make install
+```
