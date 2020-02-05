@@ -23,7 +23,12 @@ entity Project_Countdown is
         o_Segment2_D : out std_logic;
         o_Segment2_E : out std_logic;
         o_Segment2_F : out std_logic;
-        o_Segment2_G : out std_logic
+        o_Segment2_G : out std_logic;
+        
+        o_LED_1      : out std_logic;
+        o_LED_2      : out std_logic;
+        o_LED_3      : out std_logic;
+        o_LED_4      : out std_logic
     );
 end entity Project_Countdown;
 
@@ -63,6 +68,16 @@ begin
         o_Switch => w_Switch_1
     );
     
+    -- Instantiate a caterpillar leds
+    Caterpillar_Inst : entity work.Caterpillar_Leds
+    port map (
+        i_Clk   => i_Clk, 
+        o_LED_1 => o_LED_1,
+        o_LED_2 => o_LED_2,
+        o_LED_3 => o_LED_3,
+        o_LED_4 => o_LED_4
+    );
+
     p_Switch_Count : process (i_Clk) is
     begin
         if rising_edge(i_Clk)
@@ -133,6 +148,6 @@ begin
 	o_Segment2_E  <= not w_Segment2_E;
 	o_Segment2_F  <= not w_Segment2_F;
 	o_Segment2_G  <= not w_Segment2_G;
-    
+	
 end
 architecture RTL;
