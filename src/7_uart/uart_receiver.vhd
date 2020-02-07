@@ -35,15 +35,7 @@ begin
                 if i_UART_RX = '0'
                 then
                     r_State <= STARTING;
-
-                    r_Bits(0) <= '0';
-                    r_Bits(1) <= '0';
-                    r_Bits(2) <= '0';
-                    r_Bits(3) <= '0';
-                    r_Bits(4) <= '0';
-                    r_Bits(5) <= '0';
-                    r_Bits(6) <= '0';
-                    r_Bits(7) <= '0';
+                    r_Bits <= "00000000";
                     r_Counter <= 0;
                     r_TimeCount <= 0;
                 end if;
