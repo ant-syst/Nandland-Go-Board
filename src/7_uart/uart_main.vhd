@@ -30,9 +30,9 @@ end entity UART;
 
 architecture RTL of UART is
 
-    signal r_Byte       : std_logic_vector(7 downto 0) := "00000000";
-    signal right_digit  : integer := 0;
-    signal left_digit   : integer := 0;
+    signal r_Byte         : std_logic_vector(7 downto 0) := "00000000";
+    signal r_Right_Digit  : integer := 0;
+    signal r_Left_Digit   : integer := 0;
 
     signal w_Segment1_A : std_logic := '0';
     signal w_Segment1_B : std_logic := '0';
@@ -65,13 +65,13 @@ begin
         o_Byte    => r_Byte
     );
 
-    left_digit <= to_integer(unsigned(r_Byte)) / 16;
-    right_digit <= to_integer(unsigned(r_Byte)) mod 16;
+    r_Left_Digit <= to_integer(unsigned(r_Byte)) / 16;
+    r_Right_Digit <= to_integer(unsigned(r_Byte)) mod 16;
 
     SevenSeg1_Inst : entity work.Binary_To_7Segment
     port map (
         i_Clk      => i_Clk,
-        i_Binary_Num => std_logic_vector(to_unsigned(right_digit, 4)),
+        i_Binary_Num => std_logic_vector(to_unsigned(r_Right_Digit, 4)),
         o_Segment_A  => w_Segment2_A,
         o_Segment_B  => w_Segment2_B,
         o_Segment_C  => w_Segment2_C,
@@ -84,7 +84,7 @@ begin
     SevenSeg2_Inst : entity work.Binary_To_7Segment
     port map (
         i_Clk      => i_Clk,
-        i_Binary_Num => std_logic_vector(to_unsigned(left_digit, 4)),
+        i_Binary_Num => std_logic_vector(to_unsigned(r_Left_Digit, 4)),
         o_Segment_A  => w_Segment1_A,
         o_Segment_B  => w_Segment1_B,
         o_Segment_C  => w_Segment1_C,
