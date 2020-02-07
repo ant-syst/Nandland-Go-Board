@@ -27,6 +27,49 @@ architecture RTL of UART_Receiver is
     signal r_State     : T_STATE := STOPPED;
 
 begin
+
+    -- UART Serial Data Stream
+    --
+    -- 1 ____             _________  _________  _________  _________  _________
+    --       \           /         \/         \/         \/         \/
+    --        \  start  /\ Bit 0   /\ Bit 1   /\ Bit n   /\ Bit 7   / Stop
+    -- 0       \_______/  \_______/  \_______/  \_______/  \_______/
+    --       ^     ^          ^          ^
+    --       |     |          |          |
+    -- detection  wait       sampling
+    -- of the     (g_PERIOD  each
+    -- falling    / 2)       g_PERIOD
+    -- edge
+
+    -- State machine
+    --
+    --                                  ---------
+    --     |-------------------------->| STOPPED |<-------------------|
+    --     |                            ---------                     |
+    --     |                                |                         |
+    --     |                                |                         |
+    --     |                            UART_RX == 0                  |
+    --     |                                |                         |
+    --     |                                v     |---------|         |
+    --  --------                        ----------|   r_TimeCount <   |
+    -- | FAILED |<-- UART_RX == 1 && --| STARTING |   (g_PERIOD / 2)  |
+    --  --------     r_TimeCount ==     ----------|         |         |
+    --     ^         (g_PERIOD / 2)         |     <---------|         |
+    --     |                                |                         |
+    --     |                                |                         |
+    --     |                          UART_RX == 0 &&                 |
+    --     |                          r_TimeCount ==                  |
+    --     |                          (g_PERIOD / 2)                  |
+    --     |                                |                         |
+    --     |                                v    |---------|          |
+    --     |                            ---------|         |          |
+    --     |-- r_Counter == 8 && ------| STARTED |   r_Counter != 8   |
+    --           UART_RX == 0           ---------|         |          |
+    --                                      |    <---------|          |
+    --                                      |                         |
+    --                                      |-- r_Counter == 8 && -----
+    --                                          UART_RX == 1
+
     p_Sampler : process (i_Clk) is
     begin
         if rising_edge(i_Clk)
