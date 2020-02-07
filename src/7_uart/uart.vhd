@@ -7,8 +7,6 @@ entity UART is
       -- main clock 25 MHz
         i_Clk        : in std_logic;
 
-        i_Switch_1   : in std_logic;
-
         i_UART_RX   : in std_logic;
 
         o_LED_1      : out std_logic;
@@ -57,9 +55,6 @@ architecture RTL of UART is
     signal r_num3      : std_logic_vector(3 downto 0) := "0000";
     signal r_state     : T_STATE := STOPPED;
 
-    signal r_Switch_1 : std_logic := '0';
-    signal w_Switch_1 : std_logic := '0';
-
     signal w_Segment1_A : std_logic := '0';
     signal w_Segment1_B : std_logic := '0';
     signal w_Segment1_C : std_logic := '0';
@@ -77,14 +72,6 @@ architecture RTL of UART is
     signal w_Segment2_G : std_logic := '0';
 
 begin
-    -- Instantiate a debounce filter
-    Debounce_Inst1 : entity work.Debounce_Switch
-    port map (
-        i_Clk    => i_Clk,
-        i_Switch => i_Switch_1,
-        o_Switch => w_Switch_1
-    );
-
     r_num3(0) <= '0';
     r_num3(1) <= '1';
     r_num3(2) <= '0';
@@ -94,144 +81,133 @@ begin
     begin
         if rising_edge(i_Clk)
         then
-            r_Switch_1 <= w_Switch_1;
-            if w_Switch_1 = '0' and r_Switch_1 = '1'
+            if r_state = STOPPED
             then
-                w_Segment2_A  <= '0';
-                w_Segment2_B  <= '0';
-                w_Segment2_C  <= '0';
-                w_Segment2_D  <= '0';
-                w_Segment2_E  <= '0';
-                w_Segment2_F  <= '0';
-                w_Segment2_G  <= '0';
-
-                w_Segment1_A  <= '0';
-                w_Segment1_B  <= '0';
-                w_Segment1_C  <= '0';
-                w_Segment1_D  <= '0';
-                w_Segment1_E  <= '0';
-                w_Segment1_F  <= '0';
-                w_Segment1_G  <= '0';
-
-                r_LED_1 <= '0';
-                r_LED_2 <= '0';
-                r_LED_3 <= '0';
-                r_LED_4 <= '0';
-                r_time <= 0;
-                r_counter <= 0;
-                r_state <= STOPPED;
-            else
-                if r_state = STOPPED
+                if i_UART_RX = '0'
                 then
+                    r_LED_1 <= '1';
+                    r_time <= 217 / 2;
+                    r_state <= STARTING;
+
+                    w_Segment2_A  <= '0';
+                    w_Segment2_B  <= '0';
+                    w_Segment2_C  <= '0';
+                    w_Segment2_D  <= '0';
+                    w_Segment2_E  <= '0';
+                    w_Segment2_F  <= '0';
+                    w_Segment2_G  <= '0';
+
+                    w_Segment1_A  <= '0';
+                    w_Segment1_B  <= '0';
+                    w_Segment1_C  <= '0';
+                    w_Segment1_D  <= '0';
+                    w_Segment1_E  <= '0';
+                    w_Segment1_F  <= '0';
+                    w_Segment1_G  <= '0';
+
+                    r_LED_2 <= '0';
+                    r_LED_3 <= '0';
+                    r_LED_4 <= '0';
+                    --r_time <= 0;
+                    r_counter <= 0;
+                end if;
+
+            elsif r_state = STARTING
+            then
+                if r_TimeCount < r_time
+                then
+                    r_TimeCount <= r_TimeCount + 1;
+                else
                     if i_UART_RX = '0'
                     then
-                        r_LED_1 <= '1';
-                        r_time <= 217 / 2;
-                        r_state <= STARTING;
-                    end if;
-                elsif r_state = STARTING
-                then
-                    if r_TimeCount < r_time
-                    then
-                        r_TimeCount <= r_TimeCount + 1;
+                        r_LED_2 <= '1';
+                        r_state <= STARTED;
+                        r_time <= 217;
                     else
-                        if i_UART_RX = '0'
+                        r_LED_4 <= '1';
+                        r_state <= FAILED;
+                    end if;
+
+                    r_TimeCount <= 0;
+                end if;
+            elsif r_state = FAILED
+            then
+                r_state <= STOPPED;
+            elsif r_state = STARTED
+            then
+                if r_TimeCount < r_time
+                then
+                    r_TimeCount <= r_TimeCount + 1;
+                else
+                    r_TimeCount <= 0;
+                    r_time <= 217;
+
+                    if r_counter = 8
+                    then
+                        if i_UART_RX = '1'
                         then
-                            r_LED_2 <= '1';
-                            r_state <= STARTED;
-                            r_time <= 217;
+                            r_state <= STOPPED;
                         else
-                            r_LED_4 <= '1';
                             r_state <= FAILED;
                         end if;
-
-                        r_TimeCount <= 0;
-                    end if;
-                elsif r_state = FAILED
-                then
-                    r_state <= STOPPED;
-                else
-
-                    if r_TimeCount < r_time
-                    then
-                        r_TimeCount <= r_TimeCount + 1;
                     else
-                        r_TimeCount <= 0;
-                        r_time <= 217;
-
-                        if r_counter = 8
+                        if i_UART_RX = '1'
                         then
-                            if i_UART_RX = '1'
+                            if r_counter = 0
                             then
-                                r_state <= STOPPED;
-                            else
-                                r_state <= FAILED;
-                            end if;
-                        else
-                            if i_UART_RX = '1'
-                            then
-                                if r_counter = 0
-                                then
-                                    w_Segment2_A  <= '1';
-                                    r_counter <= r_counter + 1;
-                                elsif r_counter = 1
-                                then
-                                    w_Segment2_B  <= '1';
-                                    r_counter <= r_counter + 1;
-                                elsif r_counter = 2
-                                then
-                                    w_Segment2_C  <= '1';
-                                    r_counter <= r_counter + 1;
-                                elsif r_counter = 3
-                                then
-                                    w_Segment2_D  <= '1';
-                                    r_counter <= r_counter + 1;
-                                elsif r_counter = 4
-                                then
-                                    w_Segment2_E  <= '1';
-                                    r_counter <= r_counter + 1;
-                                elsif r_counter = 5
-                                then
-                                    w_Segment2_F  <= '1';
-                                    r_counter <= r_counter + 1;
-                                elsif r_counter = 6
-                                then
-                                    w_Segment2_G  <= '1';
-                                    r_counter <= r_counter + 1;
-                                elsif r_counter = 7
-                                then
-                                    w_Segment1_A  <= '1';
-                                    r_counter <= r_counter + 1;
-                                elsif r_counter = 8
-                                then
-                                    w_Segment1_B  <= '1';
-                                    r_counter <= r_counter + 1;
-                                elsif r_counter = 9
-                                then
-                                    w_Segment1_C  <= '1';
-                                    r_counter <= r_counter + 1;
-                                else
-                                    w_Segment1_D  <= '1';
-                                    --r_counter <= r_counter + 1;
-                                end if;
-                            --r_LED_2 <= '0';
-                            else
-                                --r_LED_1 <= '0';
-                                --r_LED_2 <= '1';
+                                w_Segment2_A  <= '1';
                                 r_counter <= r_counter + 1;
+                            elsif r_counter = 1
+                            then
+                                w_Segment2_B  <= '1';
+                                r_counter <= r_counter + 1;
+                            elsif r_counter = 2
+                            then
+                                w_Segment2_C  <= '1';
+                                r_counter <= r_counter + 1;
+                            elsif r_counter = 3
+                            then
+                                w_Segment2_D  <= '1';
+                                r_counter <= r_counter + 1;
+                            elsif r_counter = 4
+                            then
+                                w_Segment2_E  <= '1';
+                                r_counter <= r_counter + 1;
+                            elsif r_counter = 5
+                            then
+                                w_Segment2_F  <= '1';
+                                r_counter <= r_counter + 1;
+                            elsif r_counter = 6
+                            then
+                                w_Segment2_G  <= '1';
+                                r_counter <= r_counter + 1;
+                            elsif r_counter = 7
+                            then
+                                --r_LED_3 <= '1';
+                                w_Segment1_A  <= '1';
+                                r_counter <= r_counter + 1;
+                            elsif r_counter = 8
+                            then
+                                w_Segment1_B  <= '1';
+                                r_counter <= r_counter + 1;
+                            elsif r_counter = 9
+                            then
+                                w_Segment1_C  <= '1';
+                                r_counter <= r_counter + 1;
+                            else
+                                w_Segment1_D  <= '1';
+                                --r_counter <= r_counter + 1;
                             end if;
+                        --r_LED_2 <= '0';
+                        else
+                            --r_LED_1 <= '0';
+                            --r_LED_2 <= '1';
+                            r_counter <= r_counter + 1;
                         end if;
                     end if;
-
-
-
-
-
-
-
-
                 end if;
             end if;
+
         end if;
     end process;
 
@@ -239,6 +215,8 @@ begin
     o_LED_2 <= r_LED_2;
     o_LED_3 <= r_LED_3;
     o_LED_4 <= r_LED_4;
+
+    --o_LED_3 <= not w_Segment1_A;
 
     --SevenSeg1_Inst : entity work.Binary_To_7Segment
     --port map (
@@ -252,6 +230,8 @@ begin
     --    o_Segment_F  => w_Segment2_F,
     --    o_Segment_G  => w_Segment2_G
     --);
+
+    --w_Segment2_A  <= '0';
 
     o_Segment2_A  <= not w_Segment2_A;
     o_Segment2_B  <= not w_Segment2_B;
@@ -268,6 +248,8 @@ begin
     o_Segment1_E  <= not w_Segment1_E;
     o_Segment1_F  <= not w_Segment1_F;
     o_Segment1_G  <= not w_Segment1_G;
+
+
 
 end
 architecture RTL;
