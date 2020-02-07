@@ -50,8 +50,7 @@ architecture RTL of UART is
     signal r_LED_4     : std_logic := '0';
 
     signal r_counter   : integer range 0 to 10 := 0;
-    signal r_num       : integer range 0 to 255 := 0;
-    signal r_num2      : std_logic_vector(3 downto 0) := "0000";
+    signal r_num2      : std_logic_vector(7 downto 0) := "00000000";
     signal r_num3      : std_logic_vector(3 downto 0) := "0000";
     signal r_state     : T_STATE := STOPPED;
 
@@ -89,21 +88,30 @@ begin
                     r_time <= 217 / 2;
                     r_state <= STARTING;
 
-                    w_Segment2_A  <= '0';
-                    w_Segment2_B  <= '0';
-                    w_Segment2_C  <= '0';
-                    w_Segment2_D  <= '0';
-                    w_Segment2_E  <= '0';
-                    w_Segment2_F  <= '0';
-                    w_Segment2_G  <= '0';
+                    --w_Segment2_A  <= '0';
+                    --w_Segment2_B  <= '0';
+                    --w_Segment2_C  <= '0';
+                    --w_Segment2_D  <= '0';
+                    --w_Segment2_E  <= '0';
+                    --w_Segment2_F  <= '0';
+                    --w_Segment2_G  <= '0';
 
-                    w_Segment1_A  <= '0';
-                    w_Segment1_B  <= '0';
-                    w_Segment1_C  <= '0';
-                    w_Segment1_D  <= '0';
-                    w_Segment1_E  <= '0';
-                    w_Segment1_F  <= '0';
-                    w_Segment1_G  <= '0';
+                    --w_Segment1_A  <= '0';
+                    --w_Segment1_B  <= '0';
+                    --w_Segment1_C  <= '0';
+                    --w_Segment1_D  <= '0';
+                    --w_Segment1_E  <= '0';
+                    --w_Segment1_F  <= '0';
+                    --w_Segment1_G  <= '0';
+
+                    r_num2(0) <= '0';
+                    r_num2(1) <= '0';
+                    r_num2(2) <= '0';
+                    r_num2(3) <= '0';
+                    r_num2(4) <= '0';
+                    r_num2(5) <= '0';
+                    r_num2(6) <= '0';
+                    r_num2(7) <= '0';
 
                     r_LED_2 <= '0';
                     r_LED_3 <= '0';
@@ -153,55 +161,60 @@ begin
                     else
                         if i_UART_RX = '1'
                         then
-                            if r_counter = 0
-                            then
-                                w_Segment2_A  <= '1';
-                                r_counter <= r_counter + 1;
-                            elsif r_counter = 1
-                            then
-                                w_Segment2_B  <= '1';
-                                r_counter <= r_counter + 1;
-                            elsif r_counter = 2
-                            then
-                                w_Segment2_C  <= '1';
-                                r_counter <= r_counter + 1;
-                            elsif r_counter = 3
-                            then
-                                w_Segment2_D  <= '1';
-                                r_counter <= r_counter + 1;
-                            elsif r_counter = 4
-                            then
-                                w_Segment2_E  <= '1';
-                                r_counter <= r_counter + 1;
-                            elsif r_counter = 5
-                            then
-                                w_Segment2_F  <= '1';
-                                r_counter <= r_counter + 1;
-                            elsif r_counter = 6
-                            then
-                                w_Segment2_G  <= '1';
-                                r_counter <= r_counter + 1;
-                            elsif r_counter = 7
-                            then
+                            r_num2(r_counter) <= '1';
+                            r_counter <= r_counter + 1;
+
+                            --if r_counter = 0
+                            --then
+                            --    w_Segment2_A  <= '1';
+                            --    r_counter <= r_counter + 1;
+                            --elsif r_counter = 1
+                            --then
+                            --    w_Segment2_B  <= '1';
+                            --    r_counter <= r_counter + 1;
+                            --elsif r_counter = 2
+                            --then
+                            --    w_Segment2_C  <= '1';
+                            --    r_counter <= r_counter + 1;
+                            --elsif r_counter = 3
+                            --then
+                            --    w_Segment2_D  <= '1';
+                            --    r_counter <= r_counter + 1;
+                            --elsif r_counter = 4
+                            --then
+                            --    w_Segment2_E  <= '1';
+                            --    r_counter <= r_counter + 1;
+                            --elsif r_counter = 5
+                            --then
+                            --    w_Segment2_F  <= '1';
+                            --    r_counter <= r_counter + 1;
+                            --elsif r_counter = 6
+                            --then
+                            --    w_Segment2_G  <= '1';
+                            --    r_counter <= r_counter + 1;
+                            --elsif r_counter = 7
+                            --then
                                 --r_LED_3 <= '1';
-                                w_Segment1_A  <= '1';
-                                r_counter <= r_counter + 1;
-                            elsif r_counter = 8
-                            then
-                                w_Segment1_B  <= '1';
-                                r_counter <= r_counter + 1;
-                            elsif r_counter = 9
-                            then
-                                w_Segment1_C  <= '1';
-                                r_counter <= r_counter + 1;
-                            else
-                                w_Segment1_D  <= '1';
-                                --r_counter <= r_counter + 1;
-                            end if;
+                            --    w_Segment1_A  <= '1';
+                            --    r_counter <= r_counter + 1;
+                            --elsif r_counter = 8
+                            --then
+                            --    w_Segment1_B  <= '1';
+                            --    r_counter <= r_counter + 1;
+                            --elsif r_counter = 9
+                            --then
+                            --    w_Segment1_C  <= '1';
+                            --    r_counter <= r_counter + 1;
+                            --else
+                            --    w_Segment1_D  <= '1';
+                            --    --r_counter <= r_counter + 1;
+                            --end if;
+
                         --r_LED_2 <= '0';
                         else
                             --r_LED_1 <= '0';
                             --r_LED_2 <= '1';
+                            r_num2(r_counter) <= '0';
                             r_counter <= r_counter + 1;
                         end if;
                     end if;
@@ -215,6 +228,22 @@ begin
     o_LED_2 <= r_LED_2;
     o_LED_3 <= r_LED_3;
     o_LED_4 <= r_LED_4;
+
+    w_Segment2_A  <= r_num2(0);
+    w_Segment2_B  <= r_num2(1);
+    w_Segment2_C  <= r_num2(2);
+    w_Segment2_D  <= r_num2(3);
+    w_Segment2_E  <= r_num2(4);
+    w_Segment2_F  <= r_num2(5);
+    w_Segment2_G  <= r_num2(6);
+
+    w_Segment1_A  <= r_num2(7);
+    w_Segment1_B  <= '0';
+    w_Segment1_C  <= '0';
+    w_Segment1_D  <= '0';
+    w_Segment1_E  <= '0';
+    w_Segment1_F  <= '0';
+    w_Segment1_G  <= '0';
 
     --o_LED_3 <= not w_Segment1_A;
 
@@ -248,8 +277,6 @@ begin
     o_Segment1_E  <= not w_Segment1_E;
     o_Segment1_F  <= not w_Segment1_F;
     o_Segment1_G  <= not w_Segment1_G;
-
-
 
 end
 architecture RTL;
