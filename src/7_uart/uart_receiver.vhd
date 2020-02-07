@@ -10,9 +10,10 @@ entity UART_Receiver is
     );
     port (
         -- main clock 25 MHz
-        i_Clk     : in std_logic;
-        i_UART_RX : in std_logic;
-        o_Byte    : out std_logic_vector(7 downto 0)
+        i_Clk        : in std_logic;
+        i_UART_RX    : in std_logic;
+        o_Byte       : out std_logic_vector(7 downto 0);
+        o_Has_Failed : out std_logic
     );
 end entity UART_Receiver;
 
@@ -38,6 +39,7 @@ begin
                     r_Bits <= "00000000";
                     r_Counter <= 0;
                     r_TimeCount <= 0;
+                    o_Has_Failed <= '0';
                 end if;
 
             elsif r_State = STARTING
@@ -57,6 +59,7 @@ begin
                 end if;
             elsif r_State = FAILED
             then
+                o_Has_Failed <= '1';
                 r_State <= STOPPED;
             elsif r_State = STARTED
             then

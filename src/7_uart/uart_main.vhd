@@ -33,6 +33,7 @@ architecture RTL of UART is
     signal r_Byte         : std_logic_vector(7 downto 0) := "00000000";
     signal r_Right_Digit  : integer := 0;
     signal r_Left_Digit   : integer := 0;
+    signal r_Has_Failed   : std_logic := '0';
 
     signal w_Segment1_A : std_logic := '0';
     signal w_Segment1_B : std_logic := '0';
@@ -60,9 +61,10 @@ begin
         g_PERIOD => 217
     )
     port map (
-        i_Clk     => i_Clk,
-        i_UART_RX => i_UART_RX,
-        o_Byte    => r_Byte
+        i_Clk        => i_Clk,
+        i_UART_RX    => i_UART_RX,
+        o_Byte       => r_Byte,
+        o_Has_Failed => r_Has_Failed
     );
 
     r_Left_Digit <= to_integer(unsigned(r_Byte)) / 16;
