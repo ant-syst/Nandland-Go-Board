@@ -52,9 +52,9 @@ architecture RTL of UART is
 
 begin
 
-    -- clock : 25000000 cycmes / 1 second
+    -- clock : 25000000 cycles / 1 second
     -- 115200 bauds / 1 second => 115200 bits / 1 second
-    -- baud duration in cycles: 25000000/115200 : 217
+    -- baud duration in cycles: 25000000/115200 : 217 cycles
     UART_Receiver_Inst : entity work.UART_Receiver
     generic map (
         g_PERIOD => 217
