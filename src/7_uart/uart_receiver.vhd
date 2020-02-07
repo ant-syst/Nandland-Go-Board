@@ -75,14 +75,8 @@ begin
                             r_State <= FAILED;
                         end if;
                     else
-                        if i_UART_RX = '1'
-                        then
-                            r_Bits(r_Counter) <= '1';
-                            r_Counter <= r_Counter + 1;
-                        else
-                            r_Bits(r_Counter) <= '0';
-                            r_Counter <= r_Counter + 1;
-                        end if;
+                        r_Bits(r_Counter) <= i_UART_RX;
+                        r_Counter <= r_Counter + 1;
                     end if;
                 end if;
             end if;
