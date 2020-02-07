@@ -42,7 +42,7 @@ begin
 
             elsif r_State = STARTING
             then
-                if r_TimeCount < (217 / 2)
+                if r_TimeCount < (g_PERIOD / 2)
                 then
                     r_TimeCount <= r_TimeCount + 1;
                 else
@@ -60,7 +60,7 @@ begin
                 r_State <= STOPPED;
             elsif r_State = STARTED
             then
-                if r_TimeCount < 217
+                if r_TimeCount < g_PERIOD
                 then
                     r_TimeCount <= r_TimeCount + 1;
                 else
