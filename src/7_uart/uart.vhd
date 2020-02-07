@@ -40,7 +40,7 @@ architecture RTL of UART is
     --115200   bauds / 1 seconde => 115200 bits en 1 seconde
     --durée d'un baud en cycle: 25000000/115200/8 : 217
     
-    type T_STATE is (STARTED, STOPPED);
+    type T_STATE is (FALLING_EDGE, STARTED, STOPPED);
     
     signal r_LedCounter : integer range 0 to 4 := 0;
     signal r_TimeCount : integer range 0 to 10000 := 0;
@@ -127,11 +127,24 @@ begin
                     then
                         r_LED_1 <= '1';
                         --r_time <= 325;
-                        r_time <= 217 + (217 / 2) + 80;
+                        r_time <= 217 / 2;
+                        r_state <= FALLING_EDGE;
+                    end if;
+                elsif r_state = FALLING_EDGE
+                then
+                    if r_TimeCount < r_time
+                    then
+                        r_TimeCount <= r_TimeCount + 1;
+                    else
+                        if i_UART_RX = '0'
+                        then
+                            r_LED_2 <= '1';
+                        end if;
                         r_state <= STARTED;
+                        r_time <= 217;
+                        r_TimeCount <= 0;
                     end if;
                 else
-                    
                     if r_TimeCount < r_time
                     then
                         r_TimeCount <= r_TimeCount + 1;
@@ -143,7 +156,6 @@ begin
                         then
                             if r_counter = 0
                             then
-                                --r_LED_2 <= '1';
                                 w_Segment2_A  <= '1';
                                 r_counter <= r_counter + 1;
                             elsif r_counter = 1
