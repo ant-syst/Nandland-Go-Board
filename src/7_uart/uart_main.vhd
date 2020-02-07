@@ -2,6 +2,7 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
+-- read an octet from UART
 entity UART is
     port (
       -- main clock 25 MHz
@@ -29,18 +30,9 @@ end entity UART;
 
 architecture RTL of UART is
 
-    --25000000 clock / 1 seconde
-    --115200   bauds / 1 seconde => 115200 bits en 1 seconde
-    --durée d'un baud en cycle: 25000000/115200/8 : 217
-
-    type T_STATE is (STOPPED, STARTING, STARTED, FAILED);
-
-    signal right_digit : integer := 0;
-    signal left_digit : integer := 0;
-    signal r_TimeCount : integer range 0 to 10000 := 0;
-    signal r_counter   : integer range 0 to 10 := 0;
-    signal r_bits      : std_logic_vector(7 downto 0) := "00000000";
-    signal r_state     : T_STATE := STOPPED;
+    signal r_Byte       : std_logic_vector(7 downto 0) := "00000000";
+    signal right_digit  : integer := 0;
+    signal left_digit   : integer := 0;
 
     signal w_Segment1_A : std_logic := '0';
     signal w_Segment1_B : std_logic := '0';
@@ -59,79 +51,22 @@ architecture RTL of UART is
     signal w_Segment2_G : std_logic := '0';
 
 begin
-    p_Sampler : process (i_Clk) is
-    begin
-        if rising_edge(i_Clk)
-        then
-            if r_state = STOPPED
-            then
-                if i_UART_RX = '0'
-                then
-                    r_state <= STARTING;
 
-                    r_bits(0) <= '0';
-                    r_bits(1) <= '0';
-                    r_bits(2) <= '0';
-                    r_bits(3) <= '0';
-                    r_bits(4) <= '0';
-                    r_bits(5) <= '0';
-                    r_bits(6) <= '0';
-                    r_bits(7) <= '0';
-                    r_counter <= 0;
-                    r_TimeCount <= 0;
-                end if;
+    -- clock : 25000000 cycmes / 1 second
+    -- 115200 bauds / 1 second => 115200 bits / 1 second
+    -- baud duration in cycles: 25000000/115200 : 217
+    UART_Receiver_Inst : entity work.UART_Receiver
+    generic map (
+        g_PERIOD => 217
+    )
+    port map (
+        i_Clk     => i_Clk,
+        i_UART_RX => i_UART_RX,
+        o_Byte    => r_Byte
+    );
 
-            elsif r_state = STARTING
-            then
-                if r_TimeCount < (217 / 2)
-                then
-                    r_TimeCount <= r_TimeCount + 1;
-                else
-                    r_TimeCount <= 0;
-
-                    if i_UART_RX = '0'
-                    then
-                        r_state <= STARTED;
-                    else
-                        r_state <= FAILED;
-                    end if;
-                end if;
-            elsif r_state = FAILED
-            then
-                r_state <= STOPPED;
-            elsif r_state = STARTED
-            then
-                if r_TimeCount < 217
-                then
-                    r_TimeCount <= r_TimeCount + 1;
-                else
-                    r_TimeCount <= 0;
-
-                    if r_counter = 8
-                    then
-                        if i_UART_RX = '1'
-                        then
-                            r_state <= STOPPED;
-                        else
-                            r_state <= FAILED;
-                        end if;
-                    else
-                        if i_UART_RX = '1'
-                        then
-                            r_bits(r_counter) <= '1';
-                            r_counter <= r_counter + 1;
-                        else
-                            r_bits(r_counter) <= '0';
-                            r_counter <= r_counter + 1;
-                        end if;
-                    end if;
-                end if;
-            end if;
-        end if;
-    end process;
-
-    left_digit <= to_integer(unsigned(r_bits)) / 16;
-    right_digit <= to_integer(unsigned(r_bits)) mod 16;
+    left_digit <= to_integer(unsigned(r_Byte)) / 16;
+    right_digit <= to_integer(unsigned(r_Byte)) mod 16;
 
     SevenSeg1_Inst : entity work.Binary_To_7Segment
     port map (
