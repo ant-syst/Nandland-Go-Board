@@ -76,9 +76,11 @@ begin
         then
             if r_State = STOPPED
             then
+                -- reception of the falling edge of th start bit
                 if i_UART_RX = '0'
                 then
                     r_State <= STARTING;
+                    -- reset internal variables
                     r_Bits <= "00000000";
                     r_Counter <= 0;
                     r_TimeCount <= 0;
@@ -87,6 +89,9 @@ begin
 
             elsif r_State = STARTING
             then
+                -- wait one half of a bit period in order to align
+                -- sampling each g_PERIOD to sample in the middle of
+                -- data bit
                 if r_TimeCount < (g_PERIOD / 2)
                 then
                     r_TimeCount <= r_TimeCount + 1;
@@ -106,23 +111,31 @@ begin
                 r_State <= STOPPED;
             elsif r_State = STARTED
             then
+                -- wait g_PERIOD to sample in the middle of the data
                 if r_TimeCount < g_PERIOD
                 then
                     r_TimeCount <= r_TimeCount + 1;
                 else
+
                     r_TimeCount <= 0;
 
-                    if r_Counter = 8
+                    -- not all bits have been registered
+                    if r_Counter < 8
                     then
-                        if i_UART_RX = '1'
-                        then
-                            r_State <= STOPPED;
-                        else
-                            r_State <= FAILED;
-                        end if;
-                    else
+                        -- make a sample
                         r_Bits(r_Counter) <= i_UART_RX;
                         r_Counter <= r_Counter + 1;
+
+                    -- all bits have been registered
+                    else
+                        if i_UART_RX = '1'
+                        then
+                            -- if we observe the stop bit
+                            r_State <= STOPPED;
+                        else
+                            -- if we don't observe the stop bit
+                            r_State <= FAILED;
+                        end if;
                     end if;
                 end if;
             end if;
