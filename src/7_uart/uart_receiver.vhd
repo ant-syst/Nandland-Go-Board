@@ -92,7 +92,7 @@ begin
                 -- wait one half of a bit period in order to align
                 -- sampling each g_PERIOD to sample in the middle of
                 -- data bit
-                if r_TimeCount < (g_PERIOD / 2)
+                if r_TimeCount < ((g_PERIOD / 2) -1)
                 then
                     r_TimeCount <= r_TimeCount + 1;
                 else
@@ -112,7 +112,7 @@ begin
             elsif r_State = STARTED
             then
                 -- wait g_PERIOD to sample in the middle of the data
-                if r_TimeCount < g_PERIOD
+                if r_TimeCount < (g_PERIOD -1)
                 then
                     r_TimeCount <= r_TimeCount + 1;
                 else
