@@ -40,6 +40,8 @@ architecture RTL of UART is
 
     type T_STATE is (STOPPED, STARTING, STARTED, FAILED);
 
+    signal right_digit : integer := 0;
+    signal left_digit : integer := 0;
     signal r_LedCounter : integer range 0 to 4 := 0;
     signal r_TimeCount : integer range 0 to 10000 := 0;
     signal r_time      : integer range 0 to 1000 := 0;
@@ -71,11 +73,6 @@ architecture RTL of UART is
     signal w_Segment2_G : std_logic := '0';
 
 begin
-    r_num3(0) <= '0';
-    r_num3(1) <= '1';
-    r_num3(2) <= '0';
-    r_num3(3) <= '0';
-
     p_Sampler : process (i_Clk) is
     begin
         if rising_edge(i_Clk)
@@ -229,36 +226,52 @@ begin
     o_LED_3 <= r_LED_3;
     o_LED_4 <= r_LED_4;
 
-    w_Segment2_A  <= r_num2(0);
-    w_Segment2_B  <= r_num2(1);
-    w_Segment2_C  <= r_num2(2);
-    w_Segment2_D  <= r_num2(3);
-    w_Segment2_E  <= r_num2(4);
-    w_Segment2_F  <= r_num2(5);
-    w_Segment2_G  <= r_num2(6);
+    --w_Segment2_A  <= r_num2(0);
+    --w_Segment2_B  <= r_num2(1);
+    --w_Segment2_C  <= r_num2(2);
+    --w_Segment2_D  <= r_num2(3);
+    --w_Segment2_E  <= r_num2(4);
+    --w_Segment2_F  <= r_num2(5);
+    --w_Segment2_G  <= r_num2(6);
 
-    w_Segment1_A  <= r_num2(7);
-    w_Segment1_B  <= '0';
-    w_Segment1_C  <= '0';
-    w_Segment1_D  <= '0';
-    w_Segment1_E  <= '0';
-    w_Segment1_F  <= '0';
-    w_Segment1_G  <= '0';
+    --w_Segment1_A  <= r_num2(7);
+    --w_Segment1_B  <= '0';
+    --w_Segment1_C  <= '0';
+    --w_Segment1_D  <= '0';
+    --w_Segment1_E  <= '0';
+    --w_Segment1_F  <= '0';
+    --w_Segment1_G  <= '0';
 
     --o_LED_3 <= not w_Segment1_A;
 
-    --SevenSeg1_Inst : entity work.Binary_To_7Segment
-    --port map (
-    --    i_Clk      => i_Clk,
-    --    i_Binary_Num => r_num2,
-    --    o_Segment_A  => w_Segment2_A,
-    --    o_Segment_B  => w_Segment2_B,
-    --    o_Segment_C  => w_Segment2_C,
-    --    o_Segment_D  => w_Segment2_D,
-    --    o_Segment_E  => w_Segment2_E,
-    --    o_Segment_F  => w_Segment2_F,
-    --    o_Segment_G  => w_Segment2_G
-    --);
+    left_digit <= to_integer(unsigned(r_num2)) / 16;
+    right_digit <= to_integer(unsigned(r_num2)) mod 16;
+
+    SevenSeg1_Inst : entity work.Binary_To_7Segment
+    port map (
+        i_Clk      => i_Clk,
+        i_Binary_Num => std_logic_vector(to_unsigned(right_digit, 4)),
+        o_Segment_A  => w_Segment2_A,
+        o_Segment_B  => w_Segment2_B,
+        o_Segment_C  => w_Segment2_C,
+        o_Segment_D  => w_Segment2_D,
+        o_Segment_E  => w_Segment2_E,
+        o_Segment_F  => w_Segment2_F,
+        o_Segment_G  => w_Segment2_G
+    );
+
+    SevenSeg2_Inst : entity work.Binary_To_7Segment
+    port map (
+        i_Clk      => i_Clk,
+        i_Binary_Num => std_logic_vector(to_unsigned(left_digit, 4)),
+        o_Segment_A  => w_Segment1_A,
+        o_Segment_B  => w_Segment1_B,
+        o_Segment_C  => w_Segment1_C,
+        o_Segment_D  => w_Segment1_D,
+        o_Segment_E  => w_Segment1_E,
+        o_Segment_F  => w_Segment1_F,
+        o_Segment_G  => w_Segment1_G
+    );
 
     --w_Segment2_A  <= '0';
 
