@@ -18,7 +18,7 @@ begin
 
     UART_Inst : entity work.UART_Transmitter
     generic map (
-        g_PERIOD      => 2
+        g_PERIOD      => 3
     )
     port map (
         i_Clk         => r_Clock,

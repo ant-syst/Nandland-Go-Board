@@ -75,6 +75,8 @@ begin
     o_UART_TX <= r_UART_TX;
     o_LED_1 <= r_LED_1;
     o_LED_2 <= r_LED_2;
+    o_LED_3 <= r_LED_3;
+    o_LED_4 <= r_LED_4;
 
 end
 architecture RTL;
