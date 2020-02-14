@@ -5,12 +5,12 @@ use ieee.numeric_std.all;
 -- write a byte of data from UART
 entity UART_Transmitter is
     generic (
-        g_PERIOD : integer
+        g_CLOCKS_PER_BIT : integer
     );
     port (
         i_Clk     : in std_logic;
         i_Bits    : std_logic_vector(7 downto 0);
-        -- 1 when the i_Bits vector contains data that must be displayed
+        -- 1 when the i_Bits vector contains data that must be sent
         i_Bits_DV : in std_logic;
         o_UART_TX : out std_logic
     );
@@ -48,11 +48,11 @@ begin
                         r_State <= STARTING;
                     end if;
 
-                -- Send the start bit (0) during g_PERIOD - 1 clock cycles
+                -- Send the start bit (0) during g_CLOCKS_PER_BIT - 1 clock cycles
                 when STARTING =>
                     r_UART_TX <= '0';
 
-                    if r_Clock_Count < (g_PERIOD - 1)
+                    if r_Clock_Count < (g_CLOCKS_PER_BIT - 1)
                     then
                         r_Clock_Count <= r_Clock_Count + 1;
                     else
@@ -63,8 +63,8 @@ begin
                 -- Send the data bits
                 when STARTED =>
 
-                    -- A data bit is send during g_PERIOD - 1 clock cycles
-                    if r_Clock_Count < (g_PERIOD - 1)
+                    -- A data bit is send during g_CLOCKS_PER_BIT - 1 clock cycles
+                    if r_Clock_Count < (g_CLOCKS_PER_BIT - 1)
                     then
                         r_Clock_Count <= r_Clock_Count + 1;
                         r_UART_TX <= i_Bits(r_Bits_Index);
@@ -82,12 +82,12 @@ begin
                         end if;
                     end if;
 
-                -- Sed the stop bit
+                -- Send the stop bit
                 when STOPPING =>
 
                     r_UART_TX <= '1';
 
-                    if r_Clock_Count < (g_PERIOD - 1)
+                    if r_Clock_Count < (g_CLOCKS_PER_BIT - 1)
                     then
                         r_Clock_Count <= r_Clock_Count + 1;
                     else
