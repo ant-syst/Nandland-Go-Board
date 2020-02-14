@@ -67,13 +67,10 @@ begin
         o_Has_Failed => r_Has_Failed
     );
 
-    r_Left_Digit <= to_integer(unsigned(r_Bits)) / 16;
-    r_Right_Digit <= to_integer(unsigned(r_Bits)) mod 16;
-
     SevenSeg1_Inst : entity work.Binary_To_7Segment
     port map (
         i_Clk      => i_Clk,
-        i_Binary_Num => std_logic_vector(to_unsigned(r_Right_Digit, 4)),
+        i_Binary_Num => r_Bits(3 downto 0),
         o_Segment_A  => w_Segment2_A,
         o_Segment_B  => w_Segment2_B,
         o_Segment_C  => w_Segment2_C,
@@ -86,7 +83,7 @@ begin
     SevenSeg2_Inst : entity work.Binary_To_7Segment
     port map (
         i_Clk      => i_Clk,
-        i_Binary_Num => std_logic_vector(to_unsigned(r_Left_Digit, 4)),
+        i_Binary_Num => r_Bits(7 downto 4),
         o_Segment_A  => w_Segment1_A,
         o_Segment_B  => w_Segment1_B,
         o_Segment_C  => w_Segment1_C,
