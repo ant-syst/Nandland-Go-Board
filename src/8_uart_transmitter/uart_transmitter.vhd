@@ -9,16 +9,9 @@ entity UART_Transmitter is
         g_PERIOD : integer
     );
     port (
-        i_Switch_1: in std_logic;
-        i_Switch_2: in std_logic;
-
         i_Clk     : in std_logic;
-
-        o_LED_1   : out std_logic;
-        o_LED_2   : out std_logic;
-        o_LED_3   : out std_logic;
-        o_LED_4   : out std_logic;
-
+        i_Bits    : std_logic_vector(7 downto 0);
+        i_Bits_DV : in std_logic;
         o_UART_TX : out std_logic
     );
 end entity UART_Transmitter;
@@ -28,18 +21,10 @@ architecture RTL of UART_Transmitter is
     type T_STATE is (STOPPING, STOPPED, STARTING, STARTED);
 
     signal r_State     : T_STATE := STOPPED;
-    signal r_Bits      : std_logic_vector(7 downto 0) := "00110101";
     signal r_UART_TX   : std_logic := '1';
-    signal r_Switch_1  : std_logic := '0';
-    signal r_Switch_2  : std_logic := '0';
 
     signal r_TimeCount : integer range 0 to 100000 := 0;
     signal r_Counter   : integer range 0 to 10 := 0;
-
-    signal r_LED_1   : std_logic := '0';
-    signal r_LED_2   : std_logic := '0';
-    signal r_LED_3   : std_logic := '0';
-    signal r_LED_4   : std_logic := '0';
 
 begin
 
@@ -50,82 +35,62 @@ begin
     --        \  start  /\ Bit 0   /\ Bit 1   /\ Bit n   /\ Bit 7   / Stop
     -- 0       \_______/  \_______/  \_______/  \_______/  \_______/
 
-    -- switch 1: send the character '*' (0b 0010 1010)
-    -- switch 2: reset leds
-
     p_Sampler : process (i_Clk) is
     begin
         if rising_edge(i_Clk)
         then
-
-            r_Switch_1 <= i_Switch_1;
-            r_Switch_2 <= i_Switch_2;
-
-            if i_Switch_1 = '0' and r_Switch_1 = '1'
+            if r_State = STOPPED
             then
-                r_LED_1 <= '1';
-                r_UART_TX <= '1';
-            elsif i_Switch_2 = '0' and r_Switch_2 = '1'
+                if i_Bits_DV = '1'
+                then
+                    r_State <= STARTING;
+                end if;
+            elsif r_State = STARTING
             then
-                r_LED_1 <= '0';
-                r_UART_TX <= '1';
-            else
-                if r_State = STOPPED
-                then
-                    if r_LED_1 = '1'
-                    then
-                        r_State <= STARTING;
-                    end if;
-                elsif r_State = STARTING
-                then
-                    r_UART_TX <= '0';
+                r_UART_TX <= '0';
 
-                    if r_TimeCount < (g_PERIOD - 1)
-                    then
-                        r_TimeCount <= r_TimeCount + 1;
-                    else
-                        r_TimeCount <= 0;
-                        r_State <= STARTED;
-                    end if;
-
-                elsif r_State = STARTED
+                if r_TimeCount < (g_PERIOD - 1)
                 then
-                    if r_TimeCount < (g_PERIOD - 1)
-                    then
-                        r_TimeCount <= r_TimeCount + 1;
-                        r_UART_TX <= r_Bits(r_Counter);
-                    else
-                        r_TimeCount <= 0;
-                        r_UART_TX <= r_Bits(r_Counter);
-
-                        if r_Counter < 7
-                        then
-                            r_Counter <= r_Counter + 1;
-                        else
-                            r_State <= STOPPING;
-                            r_Counter <= 0;
-                        end if;
-                    end if;
-                elsif r_State = STOPPING
-                then
-                    r_UART_TX <= '1';
-
-                    if r_TimeCount < (g_PERIOD - 1)
-                    then
-                        r_TimeCount <= r_TimeCount + 1;
-                    else
-                        r_TimeCount <= 0;
-                        r_State <= STOPPED;
-                        r_LED_1 <= '0';
-                    end if;
+                    r_TimeCount <= r_TimeCount + 1;
+                else
+                    r_TimeCount <= 0;
+                    r_State <= STARTED;
                 end if;
 
+            elsif r_State = STARTED
+            then
+                if r_TimeCount < (g_PERIOD - 1)
+                then
+                    r_TimeCount <= r_TimeCount + 1;
+                    r_UART_TX <= i_Bits(r_Counter);
+                else
+                    r_TimeCount <= 0;
+                    r_UART_TX <= i_Bits(r_Counter);
+
+                    if r_Counter < 7
+                    then
+                        r_Counter <= r_Counter + 1;
+                    else
+                        r_State <= STOPPING;
+                        r_Counter <= 0;
+                    end if;
+                end if;
+            elsif r_State = STOPPING
+            then
+                r_UART_TX <= '1';
+
+                if r_TimeCount < (g_PERIOD - 1)
+                then
+                    r_TimeCount <= r_TimeCount + 1;
+                else
+                    r_TimeCount <= 0;
+                    r_State <= STOPPED;
+                end if;
             end if;
         end if;
     end process;
 
     o_UART_TX <= r_UART_TX;
-    o_LED_1 <= r_LED_1;
 
 end
 architecture RTL;

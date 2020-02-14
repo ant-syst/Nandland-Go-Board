@@ -7,31 +7,23 @@ end entity UART_TB;
 
 architecture behave of UART_TB is
 
-    constant c_CLK_PERIOD : time  := 1 ns;
-    signal r_Clock : std_logic    := '0';
-    signal r_Switch_1 : std_logic := '0';
-    signal r_Switch_2 : std_logic := '0';
+    constant c_CLK_PERIOD : time := 1 ns;
+    signal r_Clock : std_logic := '0';
+    signal r_Bits_DV : std_logic := '1';
 
 begin
     r_Clock <= not r_Clock after c_CLK_PERIOD/2;
-    r_Switch_1 <= not r_Switch_1 after c_CLK_PERIOD * 25;
+    r_Bits_DV <= '0' when r_Bits_DV = '1' and r_Clock = '1';
 
     UART_Inst : entity work.UART_Transmitter
     generic map (
         g_PERIOD      => 3
     )
     port map (
-        i_Clk         => r_Clock,
-
-        i_Switch_1    => r_Switch_1,
-        i_Switch_2    => r_Switch_2,
-
-        o_UART_TX     => open,
-
-        o_LED_1       => open,
-        o_LED_2       => open,
-        o_LED_3       => open,
-        o_LED_4       => open
+        i_Clk     => r_Clock,
+        i_Bits    => "01010101",
+        i_Bits_DV => r_Bits_DV,
+        o_UART_TX => open
     );
 
     process is

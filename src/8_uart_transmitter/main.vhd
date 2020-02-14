@@ -25,12 +25,18 @@ architecture RTL of UART is
     signal w_Switch_1     : std_logic := '0';
     signal w_Switch_2     : std_logic := '0';
 
+    signal r_Switch_1  : std_logic := '0';
+    signal r_Switch_2  : std_logic := '0';
+
     signal r_UART_TX   : std_logic := '0';
 
     signal r_LED_1     : std_logic := '0';
     signal r_LED_2     : std_logic := '0';
     signal r_LED_3     : std_logic := '0';
     signal r_LED_4     : std_logic := '0';
+
+    signal r_Bits      : std_logic_vector(7 downto 0) := "00000000";
+    signal r_Bits_DV   : std_logic := '0';
 
 begin
 
@@ -59,18 +65,36 @@ begin
         g_PERIOD => 217
     )
     port map (
-        i_Switch_1 => w_Switch_1,
-        i_Switch_2 => w_Switch_2,
-
-        i_Clk    => i_Clk,
-
-        o_LED_1  => r_LED_1,
-        o_LED_2  => r_LED_2,
-        o_LED_3  => r_LED_3,
-        o_LED_4  => r_LED_4,
-
+        i_Bits    => r_Bits,
+        i_Bits_DV => r_Bits_DV,
+        i_Clk     => i_Clk,
         o_UART_TX => r_UART_TX
     );
+
+
+    p_Sampler : process (i_Clk) is
+    begin
+        if rising_edge(i_Clk)
+        then
+            r_Switch_1 <= i_Switch_1;
+            r_Switch_2 <= i_Switch_2;
+
+            if i_Switch_1 = '0' and r_Switch_1 = '1'
+            then
+                r_LED_1 <= '1';
+                r_Bits_DV <= '1';
+                r_Bits <= "00110101";
+
+            elsif i_Switch_2 = '0' and r_Switch_2 = '1'
+            then
+                r_LED_1 <= '0';
+                r_Bits_DV <= '1';
+                r_Bits <= "00110111";
+            else
+                r_Bits_DV <= '0';
+            end if;
+        end if;
+    end process;
 
     o_UART_TX <= r_UART_TX;
     o_LED_1 <= r_LED_1;
