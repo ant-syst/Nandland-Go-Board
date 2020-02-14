@@ -13,6 +13,7 @@ entity UART_Receiver is
         i_Clk        : in std_logic;
         i_UART_RX    : in std_logic;
         o_Byte       : out std_logic_vector(7 downto 0);
+        o_Byte_DV    : out std_logic;
         o_Has_Failed : out std_logic
     );
 end entity UART_Receiver;
@@ -76,6 +77,7 @@ begin
         then
             if r_State = STOPPED
             then
+                o_Byte_DV <= '0';
                 -- reception of the falling edge of th start bit
                 if i_UART_RX = '0'
                 then
@@ -132,6 +134,7 @@ begin
                         then
                             -- if we observe the stop bit
                             r_State <= STOPPED;
+                            o_Byte_DV <= '1';
                         else
                             -- if we don't observe the stop bit
                             r_State <= FAILED;
