@@ -11,6 +11,7 @@ entity UART_Transmitter is
     port (
         i_Clk     : in std_logic;
         i_Bits    : std_logic_vector(7 downto 0);
+        -- 1 when the i_Bits vector contains data that must be displayed
         i_Bits_DV : in std_logic;
         o_UART_TX : out std_logic
     );
@@ -23,8 +24,8 @@ architecture RTL of UART_Transmitter is
     signal r_State     : T_STATE := STOPPED;
     signal r_UART_TX   : std_logic := '1';
 
-    signal r_TimeCount : integer range 0 to 100000 := 0;
-    signal r_Counter   : integer range 0 to 10 := 0;
+    signal r_Clock_Count : integer range 0 to 1000 := 0;
+    signal r_Bits_Index   : integer range 0 to 8 := 0;
 
 begin
 
@@ -49,41 +50,41 @@ begin
             then
                 r_UART_TX <= '0';
 
-                if r_TimeCount < (g_PERIOD - 1)
+                if r_Clock_Count < (g_PERIOD - 1)
                 then
-                    r_TimeCount <= r_TimeCount + 1;
+                    r_Clock_Count <= r_Clock_Count + 1;
                 else
-                    r_TimeCount <= 0;
+                    r_Clock_Count <= 0;
                     r_State <= STARTED;
                 end if;
 
             elsif r_State = STARTED
             then
-                if r_TimeCount < (g_PERIOD - 1)
+                if r_Clock_Count < (g_PERIOD - 1)
                 then
-                    r_TimeCount <= r_TimeCount + 1;
-                    r_UART_TX <= i_Bits(r_Counter);
+                    r_Clock_Count <= r_Clock_Count + 1;
+                    r_UART_TX <= i_Bits(r_Bits_Index);
                 else
-                    r_TimeCount <= 0;
-                    r_UART_TX <= i_Bits(r_Counter);
+                    r_Clock_Count <= 0;
+                    r_UART_TX <= i_Bits(r_Bits_Index);
 
-                    if r_Counter < 7
+                    if r_Bits_Index < 7
                     then
-                        r_Counter <= r_Counter + 1;
+                        r_Bits_Index <= r_Bits_Index + 1;
                     else
                         r_State <= STOPPING;
-                        r_Counter <= 0;
+                        r_Bits_Index <= 0;
                     end if;
                 end if;
             elsif r_State = STOPPING
             then
                 r_UART_TX <= '1';
 
-                if r_TimeCount < (g_PERIOD - 1)
+                if r_Clock_Count < (g_PERIOD - 1)
                 then
-                    r_TimeCount <= r_TimeCount + 1;
+                    r_Clock_Count <= r_Clock_Count + 1;
                 else
-                    r_TimeCount <= 0;
+                    r_Clock_Count <= 0;
                     r_State <= STOPPED;
                 end if;
             end if;
