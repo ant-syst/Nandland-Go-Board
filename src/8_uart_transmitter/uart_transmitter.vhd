@@ -5,7 +5,6 @@ use ieee.numeric_std.all;
 -- write a byte of data from UART
 entity UART_Transmitter is
     generic (
-        -- sampling period to write a bit
         g_PERIOD : integer
     );
     port (
@@ -33,7 +32,7 @@ begin
     --
     -- 1 ____             _________  _________  _________  _________  _________
     --       \           /         \/         \/         \/         \/
-    --        \  start  /\ Bit 0   /\ Bit 1   /\ Bit n   /\ Bit 7   / Stop
+    --        \  start  /\ Bit 0   /\ Bit 1   /\ Bit ... /\ Bit 7   / Stop
     -- 0       \_______/  \_______/  \_______/  \_______/  \_______/
 
     p_UART_TX : process (i_Clk) is
@@ -49,6 +48,7 @@ begin
                         r_State <= STARTING;
                     end if;
 
+                -- Send the start bit (0) during g_PERIOD - 1 clock cycles
                 when STARTING =>
                     r_UART_TX <= '0';
 
@@ -60,8 +60,10 @@ begin
                         r_State <= STARTED;
                     end if;
 
+                -- Send the data bits
                 when STARTED =>
 
+                    -- A data bit is send during g_PERIOD - 1 clock cycles
                     if r_Clock_Count < (g_PERIOD - 1)
                     then
                         r_Clock_Count <= r_Clock_Count + 1;
@@ -74,11 +76,13 @@ begin
                         then
                             r_Bits_Index <= r_Bits_Index + 1;
                         else
+                            -- All bits have been sent
                             r_State <= STOPPING;
                             r_Bits_Index <= 0;
                         end if;
                     end if;
 
+                -- Sed the stop bit
                 when STOPPING =>
 
                     r_UART_TX <= '1';
