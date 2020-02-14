@@ -36,58 +36,61 @@ begin
     --        \  start  /\ Bit 0   /\ Bit 1   /\ Bit n   /\ Bit 7   / Stop
     -- 0       \_______/  \_______/  \_______/  \_______/  \_______/
 
-    p_Sampler : process (i_Clk) is
+    p_UART_TX : process (i_Clk) is
     begin
         if rising_edge(i_Clk)
         then
-            if r_State = STOPPED
-            then
-                if i_Bits_DV = '1'
-                then
-                    r_State <= STARTING;
-                end if;
-            elsif r_State = STARTING
-            then
-                r_UART_TX <= '0';
 
-                if r_Clock_Count < (g_PERIOD - 1)
-                then
-                    r_Clock_Count <= r_Clock_Count + 1;
-                else
-                    r_Clock_Count <= 0;
-                    r_State <= STARTED;
-                end if;
+            case r_State is
 
-            elsif r_State = STARTED
-            then
-                if r_Clock_Count < (g_PERIOD - 1)
-                then
-                    r_Clock_Count <= r_Clock_Count + 1;
-                    r_UART_TX <= i_Bits(r_Bits_Index);
-                else
-                    r_Clock_Count <= 0;
-                    r_UART_TX <= i_Bits(r_Bits_Index);
-
-                    if r_Bits_Index < 7
+                when STOPPED =>
+                    if i_Bits_DV = '1'
                     then
-                        r_Bits_Index <= r_Bits_Index + 1;
-                    else
-                        r_State <= STOPPING;
-                        r_Bits_Index <= 0;
+                        r_State <= STARTING;
                     end if;
-                end if;
-            elsif r_State = STOPPING
-            then
-                r_UART_TX <= '1';
 
-                if r_Clock_Count < (g_PERIOD - 1)
-                then
-                    r_Clock_Count <= r_Clock_Count + 1;
-                else
-                    r_Clock_Count <= 0;
-                    r_State <= STOPPED;
-                end if;
-            end if;
+                when STARTING =>
+                    r_UART_TX <= '0';
+
+                    if r_Clock_Count < (g_PERIOD - 1)
+                    then
+                        r_Clock_Count <= r_Clock_Count + 1;
+                    else
+                        r_Clock_Count <= 0;
+                        r_State <= STARTED;
+                    end if;
+
+                when STARTED =>
+
+                    if r_Clock_Count < (g_PERIOD - 1)
+                    then
+                        r_Clock_Count <= r_Clock_Count + 1;
+                        r_UART_TX <= i_Bits(r_Bits_Index);
+                    else
+                        r_Clock_Count <= 0;
+                        r_UART_TX <= i_Bits(r_Bits_Index);
+
+                        if r_Bits_Index < 7
+                        then
+                            r_Bits_Index <= r_Bits_Index + 1;
+                        else
+                            r_State <= STOPPING;
+                            r_Bits_Index <= 0;
+                        end if;
+                    end if;
+
+                when STOPPING =>
+
+                    r_UART_TX <= '1';
+
+                    if r_Clock_Count < (g_PERIOD - 1)
+                    then
+                        r_Clock_Count <= r_Clock_Count + 1;
+                    else
+                        r_Clock_Count <= 0;
+                        r_State <= STOPPED;
+                    end if;
+            end case;
         end if;
     end process;
 
