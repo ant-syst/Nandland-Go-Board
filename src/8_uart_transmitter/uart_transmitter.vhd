@@ -20,11 +20,11 @@ architecture RTL of UART_Transmitter is
 
     type T_STATE is (STOPPING, STOPPED, STARTING, STARTED);
 
-    signal r_State     : T_STATE := STOPPED;
-    signal r_UART_TX   : std_logic := '1';
-
+    signal r_State       : T_STATE := STOPPED;
+    signal r_UART_TX     : std_logic := '1';
     signal r_Clock_Count : integer range 0 to 1000 := 0;
-    signal r_Bits_Index   : integer range 0 to 8 := 0;
+    signal r_Bits_Index  : integer range 0 to 8 := 0;
+    signal r_Bits        : std_logic_vector(7 downto 0);
 
 begin
 
@@ -45,6 +45,9 @@ begin
                 when STOPPED =>
                     if i_Bits_DV = '1'
                     then
+                        -- Make a copy of input bits in case of i_Bits change
+                        -- in caller module
+                        r_Bits <= i_Bits;
                         r_State <= STARTING;
                     end if;
 
@@ -67,10 +70,10 @@ begin
                     if r_Clock_Count < (g_CLOCKS_PER_BIT - 1)
                     then
                         r_Clock_Count <= r_Clock_Count + 1;
-                        r_UART_TX <= i_Bits(r_Bits_Index);
+                        r_UART_TX <= r_Bits(r_Bits_Index);
                     else
                         r_Clock_Count <= 0;
-                        r_UART_TX <= i_Bits(r_Bits_Index);
+                        r_UART_TX <= r_Bits(r_Bits_Index);
 
                         if r_Bits_Index < 7
                         then
