@@ -22,10 +22,10 @@ architecture RTL of UART_Receiver is
 
     type T_STATE is (STOPPED, STARTING, STARTED, FAILED);
 
-    signal r_TimeCount : integer range 0 to 10000 := 0;
-    signal r_Counter   : integer range 0 to 10 := 0;
-    signal r_Bits      : std_logic_vector(7 downto 0) := "00000000";
-    signal r_State     : T_STATE := STOPPED;
+    signal r_Clock_Count : integer range 0 to 10000 := 0;
+    signal r_Bits_Index  : integer range 0 to 10 := 0;
+    signal r_Bits        : std_logic_vector(7 downto 0) := "00000000";
+    signal r_State       : T_STATE := STOPPED;
 
 begin
 
@@ -52,23 +52,23 @@ begin
     --     |                            UART_RX == 0                        |
     --     |                                |                               |
     --     |                                v     |---------|               |
-    --  --------                        ----------|   r_TimeCount <         |
+    --  --------                        ----------|   r_Clock_Count <       |
     -- | FAILED |<-- UART_RX == 1 && --| STARTING | (g_CLOCKS_PER_BIT / 2)  |
-    --  --------     r_TimeCount ==     ----------|         |               |
+    --  --------     r_Clock_Count ==   ----------|         |               |
     --     ^         (g_CLOCKS_PER_BIT / 2) |     <---------|               |
     --     |                                |                               |
     --     |                                |                               |
     --     |                          UART_RX == 0 &&                       |
-    --     |                          r_TimeCount ==                        |
+    --     |                          r_Clock_Count ==                      |
     --     |                          (g_CLOCKS_PER_BIT / 2)                |
     --     |                                |                               |
     --     |                                v    |---------|                |
     --     |                            ---------|         |                |
-    --     |-- r_Counter == 8 && ------| STARTED |   r_Counter != 8         |
+    --     |-- r_Bits_Index == 8 && ---| STARTED |   r_Bits_Index != 8      |
     --           UART_RX == 0           ---------|         |                |
     --                                      |    <---------|                |
     --                                      |                               |
-    --                                      |-- r_Counter == 8 && -----------
+    --                                      |-- r_Bits_Index == 8 && -------|
     --                                          UART_RX == 1
 
     -- bits a receivrd in lsb
@@ -89,8 +89,8 @@ begin
                         r_State <= STARTING;
                         -- reset internal variables
                         r_Bits <= "00000000";
-                        r_Counter <= 0;
-                        r_TimeCount <= 0;
+                        r_Bits_Index  <= 0;
+                        r_Clock_Count <= 0;
                         o_Has_Failed <= '0';
                     end if;
 
@@ -99,11 +99,11 @@ begin
                     -- wait one half of a bit period in order to align
                     -- sampling each g_CLOCKS_PER_BIT to sample in the middle of
                     -- data bit
-                    if r_TimeCount < ((g_CLOCKS_PER_BIT / 2) -1)
+                    if r_Clock_Count < ((g_CLOCKS_PER_BIT / 2) -1)
                     then
-                        r_TimeCount <= r_TimeCount + 1;
+                        r_Clock_Count <= r_Clock_Count + 1;
                     else
-                        r_TimeCount <= 0;
+                        r_Clock_Count <= 0;
 
                         if i_UART_RX = '0'
                         then
@@ -121,19 +121,19 @@ begin
                 when STARTED =>
 
                     -- wait g_CLOCKS_PER_BIT to sample in the middle of the data
-                    if r_TimeCount < (g_CLOCKS_PER_BIT -1)
+                    if r_Clock_Count < (g_CLOCKS_PER_BIT -1)
                     then
-                        r_TimeCount <= r_TimeCount + 1;
+                        r_Clock_Count <= r_Clock_Count + 1;
                     else
 
-                        r_TimeCount <= 0;
+                        r_Clock_Count <= 0;
 
                         -- not all bits have been registered
-                        if r_Counter < 8
+                        if r_Bits_Index < 8
                         then
                             -- make a sample
-                            r_Bits(r_Counter) <= i_UART_RX;
-                            r_Counter <= r_Counter + 1;
+                            r_Bits(r_Bits_Index) <= i_UART_RX;
+                            r_Bits_Index <= r_Bits_Index + 1;
 
                         -- all bits have been registered
                         else
