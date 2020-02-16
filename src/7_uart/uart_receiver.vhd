@@ -26,6 +26,7 @@ architecture RTL of UART_Receiver is
     signal r_Bits_Index  : integer range 0 to 10 := 0;
     signal r_Bits        : std_logic_vector(7 downto 0) := "00000000";
     signal r_State       : T_STATE := STOPPED;
+    signal r_Bits_DV     : std_logic := '0';
 
 begin
 
@@ -86,7 +87,7 @@ begin
 
                 when STOPPED =>
 
-                    o_Bits_DV <= '0';
+                    r_Bits_DV <= '0';
 
                     -- reception of the falling edge of the start bit
                     if i_UART_RX = '0'
@@ -156,7 +157,7 @@ begin
                         then
                             -- if we observe the stop bit
                             r_State <= STOPPED;
-                            o_Bits_DV <= '1';
+                            r_Bits_DV <= '1';
                         else
                             -- if we don't observe the stop bit
                             r_State <= FAILED;
@@ -166,6 +167,7 @@ begin
         end if;
     end process;
 
+    o_Bits_DV <= r_Bits_DV;
     o_Bits <= r_Bits;
 
 end
