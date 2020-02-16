@@ -104,7 +104,7 @@ begin
                     -- wait one half of a bit period in order to align
                     -- sampling each g_CLOCKS_PER_BIT to sample in the middle of
                     -- data bit
-                    if r_Clock_Count < ((g_CLOCKS_PER_BIT / 2) -1)
+                    if r_Clock_Count < ((g_CLOCKS_PER_BIT -1) / 2)
                     then
                         r_Clock_Count <= r_Clock_Count + 1;
                     else
