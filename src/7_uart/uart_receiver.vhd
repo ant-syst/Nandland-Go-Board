@@ -20,7 +20,7 @@ end entity UART_Receiver;
 
 architecture RTL of UART_Receiver is
 
-    type T_STATE is (STOPPED, STARTING, STARTED, FAILED);
+    type T_STATE is (STOPPED, STOPPING, STARTING, STARTED, FAILED);
 
     signal r_Clock_Count : integer range 0 to 10000 := 0;
     signal r_Bits_Index  : integer range 0 to 10 := 0;
@@ -64,12 +64,16 @@ begin
     --     |                                |                               |
     --     |                                v    |---------|                |
     --     |                            ---------|         |                |
-    --     |-- r_Bits_Index == 8 && ---| STARTED |   r_Bits_Index != 8      |
-    --           UART_RX == 0           ---------|         |                |
-    --                                      |    <---------|                |
-    --                                      |                               |
-    --                                      |-- r_Bits_Index == 8 && -------|
-    --                                          UART_RX == 1
+    --     |                           | STARTED |   r_Bits_Index != 7      |
+    --     |                            ---------|         |                |
+    --     |                                |    <---------|                |
+    --     |                                |                               |
+    --     |                           r_Bits_Index == 7                    |
+    --     |                                |                               |
+    --     |                                v                               |
+    --     |                            ----------                          |
+    --     |<------ UART_RX == 0 ------| STOPPING |-- UART_RX == 1 ---------|
+    --                                  ----------
 
     -- bits a receivrd in lsb
 
@@ -89,7 +93,6 @@ begin
                         r_State <= STARTING;
                         -- reset internal variables
                         r_Bits <= "00000000";
-                        r_Bits_Index  <= 0;
                         r_Clock_Count <= 0;
                         o_Has_Failed <= '0';
                     end if;
@@ -125,27 +128,37 @@ begin
                     then
                         r_Clock_Count <= r_Clock_Count + 1;
                     else
-
                         r_Clock_Count <= 0;
 
-                        -- not all bits have been registered
-                        if r_Bits_Index < 8
-                        then
-                            -- make a sample
-                            r_Bits(r_Bits_Index) <= i_UART_RX;
-                            r_Bits_Index <= r_Bits_Index + 1;
+                        -- make a sample
+                        r_Bits(r_Bits_Index) <= i_UART_RX;
+                        r_Bits_Index <= r_Bits_Index + 1;
 
                         -- all bits have been registered
+                        if r_Bits_Index = 7
+                        then
+                            r_State <= STOPPING;
+                            r_Bits_Index <= 0;
+                        end if;
+                    end if;
+
+                when STOPPING =>
+
+                    -- wait g_CLOCKS_PER_BIT to sample in the middle of the data
+                    if r_Clock_Count < (g_CLOCKS_PER_BIT -1)
+                    then
+                        r_Clock_Count <= r_Clock_Count + 1;
+                    else
+                        r_Clock_Count <= 0;
+
+                        if i_UART_RX = '1'
+                        then
+                            -- if we observe the stop bit
+                            r_State <= STOPPED;
+                            o_Bits_DV <= '1';
                         else
-                            if i_UART_RX = '1'
-                            then
-                                -- if we observe the stop bit
-                                r_State <= STOPPED;
-                                o_Bits_DV <= '1';
-                            else
-                                -- if we don't observe the stop bit
-                                r_State <= FAILED;
-                            end if;
+                            -- if we don't observe the stop bit
+                            r_State <= FAILED;
                         end if;
                     end if;
             end case;
