@@ -8,7 +8,7 @@ entity UART is
       -- main clock 25 MHz
         i_Clk        : in std_logic;
 
-        i_UART_RX   : in std_logic;
+        i_UART_RX    : in std_logic;
 
         o_Segment1_A : out std_logic;
         o_Segment1_B : out std_logic;
@@ -30,9 +30,8 @@ end entity UART;
 
 architecture RTL of UART is
 
-    signal r_Byte         : std_logic_vector(7 downto 0) := "00000000";
-    signal r_Right_Digit  : integer := 0;
-    signal r_Left_Digit   : integer := 0;
+    signal r_Bits         : std_logic_vector(7 downto 0) := "00000000";
+    signal r_Bits_DV      : std_logic := '0';
     signal r_Has_Failed   : std_logic := '0';
 
     signal w_Segment1_A : std_logic := '0';
@@ -58,17 +57,18 @@ begin
     -- baud duration in cycles: 25000000/115200 : 217 cycles
     UART_Receiver_Inst : entity work.UART_Receiver
     generic map (
-        g_PERIOD => 217
+        g_CLOCKS_PER_BIT => 217
     )
     port map (
         i_Clk        => i_Clk,
         i_UART_RX    => i_UART_RX,
-        o_Byte       => r_Byte,
+        o_Bits       => r_Bits,
+        o_Bits_DV    => r_Bits_DV,
         o_Has_Failed => r_Has_Failed
     );
 
-    r_Left_Digit <= to_integer(unsigned(r_Byte)) / 16;
-    r_Right_Digit <= to_integer(unsigned(r_Byte)) mod 16;
+    r_Left_Digit <= to_integer(unsigned(r_Bits)) / 16;
+    r_Right_Digit <= to_integer(unsigned(r_Bits)) mod 16;
 
     SevenSeg1_Inst : entity work.Binary_To_7Segment
     port map (

@@ -6,14 +6,14 @@ use ieee.numeric_std.all;
 entity UART_Receiver is
     generic (
         -- sampling period to read a bit
-        g_PERIOD : integer
+        g_CLOCKS_PER_BIT : integer
     );
     port (
         -- main clock 25 MHz
         i_Clk        : in std_logic;
         i_UART_RX    : in std_logic;
-        o_Byte       : out std_logic_vector(7 downto 0);
-        o_Byte_DV    : out std_logic;
+        o_Bits       : out std_logic_vector(7 downto 0);
+        o_Bits_DV    : out std_logic;
         o_Has_Failed : out std_logic
     );
 end entity UART_Receiver;
@@ -37,39 +37,41 @@ begin
     -- 0       \_______/  \_______/  \_______/  \_______/  \_______/
     --       ^     ^          ^          ^
     --       |     |          |          |
-    -- detection  wait       sampling
-    -- of the     (g_PERIOD  each
-    -- falling    / 2)       g_PERIOD
-    -- edge
+    -- detection wait       sampling
+    -- of the    (g_CLOCKS\ each g_CLOCKS_PER_BIT
+    -- falling   _PER_BIT
+    -- edge      / 2)
 
     -- State machine
     --
     --                                  ---------
-    --     |-------------------------->| STOPPED |<-------------------|
-    --     |                            ---------                     |
-    --     |                                |                         |
-    --     |                                |                         |
-    --     |                            UART_RX == 0                  |
-    --     |                                |                         |
-    --     |                                v     |---------|         |
-    --  --------                        ----------|   r_TimeCount <   |
-    -- | FAILED |<-- UART_RX == 1 && --| STARTING |   (g_PERIOD / 2)  |
-    --  --------     r_TimeCount ==     ----------|         |         |
-    --     ^         (g_PERIOD / 2)         |     <---------|         |
-    --     |                                |                         |
-    --     |                                |                         |
-    --     |                          UART_RX == 0 &&                 |
-    --     |                          r_TimeCount ==                  |
-    --     |                          (g_PERIOD / 2)                  |
-    --     |                                |                         |
-    --     |                                v    |---------|          |
-    --     |                            ---------|         |          |
-    --     |-- r_Counter == 8 && ------| STARTED |   r_Counter != 8   |
-    --           UART_RX == 0           ---------|         |          |
-    --                                      |    <---------|          |
-    --                                      |                         |
-    --                                      |-- r_Counter == 8 && -----
+    --     |-------------------------->| STOPPED |<-------------------------|
+    --     |                            ---------                           |
+    --     |                                |                               |
+    --     |                                |                               |
+    --     |                            UART_RX == 0                        |
+    --     |                                |                               |
+    --     |                                v     |---------|               |
+    --  --------                        ----------|   r_TimeCount <         |
+    -- | FAILED |<-- UART_RX == 1 && --| STARTING | (g_CLOCKS_PER_BIT / 2)  |
+    --  --------     r_TimeCount ==     ----------|         |               |
+    --     ^         (g_CLOCKS_PER_BIT / 2) |     <---------|               |
+    --     |                                |                               |
+    --     |                                |                               |
+    --     |                          UART_RX == 0 &&                       |
+    --     |                          r_TimeCount ==                        |
+    --     |                          (g_CLOCKS_PER_BIT / 2)                |
+    --     |                                |                               |
+    --     |                                v    |---------|                |
+    --     |                            ---------|         |                |
+    --     |-- r_Counter == 8 && ------| STARTED |   r_Counter != 8         |
+    --           UART_RX == 0           ---------|         |                |
+    --                                      |    <---------|                |
+    --                                      |                               |
+    --                                      |-- r_Counter == 8 && -----------
     --                                          UART_RX == 1
+
+    -- bits a receivrd in lsb
 
     p_Sampler : process (i_Clk) is
     begin
@@ -77,7 +79,7 @@ begin
         then
             if r_State = STOPPED
             then
-                o_Byte_DV <= '0';
+                o_Bits_DV <= '0';
                 -- reception of the falling edge of th start bit
                 if i_UART_RX = '0'
                 then
@@ -92,9 +94,9 @@ begin
             elsif r_State = STARTING
             then
                 -- wait one half of a bit period in order to align
-                -- sampling each g_PERIOD to sample in the middle of
+                -- sampling each g_CLOCKS_PER_BIT to sample in the middle of
                 -- data bit
-                if r_TimeCount < ((g_PERIOD / 2) -1)
+                if r_TimeCount < ((g_CLOCKS_PER_BIT / 2) -1)
                 then
                     r_TimeCount <= r_TimeCount + 1;
                 else
@@ -113,8 +115,8 @@ begin
                 r_State <= STOPPED;
             elsif r_State = STARTED
             then
-                -- wait g_PERIOD to sample in the middle of the data
-                if r_TimeCount < (g_PERIOD -1)
+                -- wait g_CLOCKS_PER_BIT to sample in the middle of the data
+                if r_TimeCount < (g_CLOCKS_PER_BIT -1)
                 then
                     r_TimeCount <= r_TimeCount + 1;
                 else
@@ -134,7 +136,7 @@ begin
                         then
                             -- if we observe the stop bit
                             r_State <= STOPPED;
-                            o_Byte_DV <= '1';
+                            o_Bits_DV <= '1';
                         else
                             -- if we don't observe the stop bit
                             r_State <= FAILED;
@@ -145,7 +147,7 @@ begin
         end if;
     end process;
 
-    o_Byte <= r_Bits;
+    o_Bits <= r_Bits;
 
 end
 architecture RTL;
