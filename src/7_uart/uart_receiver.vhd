@@ -75,7 +75,7 @@ begin
     --     |<------ UART_RX == 0 ------| STOPPING |-- UART_RX == 1 ---------|
     --                                  ----------
 
-    -- bits a receivrd in lsb
+    -- bits are received in lsb
 
     p_Sampler : process (i_Clk) is
     begin
@@ -87,7 +87,8 @@ begin
                 when STOPPED =>
 
                     o_Bits_DV <= '0';
-                    -- reception of the falling edge of th start bit
+
+                    -- reception of the falling edge of the start bit
                     if i_UART_RX = '0'
                     then
                         r_State <= STARTING;
