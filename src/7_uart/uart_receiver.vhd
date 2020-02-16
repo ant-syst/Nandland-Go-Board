@@ -77,73 +77,78 @@ begin
     begin
         if rising_edge(i_Clk)
         then
-            if r_State = STOPPED
-            then
-                o_Bits_DV <= '0';
-                -- reception of the falling edge of th start bit
-                if i_UART_RX = '0'
-                then
-                    r_State <= STARTING;
-                    -- reset internal variables
-                    r_Bits <= "00000000";
-                    r_Counter <= 0;
-                    r_TimeCount <= 0;
-                    o_Has_Failed <= '0';
-                end if;
 
-            elsif r_State = STARTING
-            then
-                -- wait one half of a bit period in order to align
-                -- sampling each g_CLOCKS_PER_BIT to sample in the middle of
-                -- data bit
-                if r_TimeCount < ((g_CLOCKS_PER_BIT / 2) -1)
-                then
-                    r_TimeCount <= r_TimeCount + 1;
-                else
-                    r_TimeCount <= 0;
+            case r_State is
 
+                when STOPPED =>
+
+                    o_Bits_DV <= '0';
+                    -- reception of the falling edge of th start bit
                     if i_UART_RX = '0'
                     then
-                        r_State <= STARTED;
-                    else
-                        r_State <= FAILED;
+                        r_State <= STARTING;
+                        -- reset internal variables
+                        r_Bits <= "00000000";
+                        r_Counter <= 0;
+                        r_TimeCount <= 0;
+                        o_Has_Failed <= '0';
                     end if;
-                end if;
-            elsif r_State = FAILED
-            then
-                o_Has_Failed <= '1';
-                r_State <= STOPPED;
-            elsif r_State = STARTED
-            then
-                -- wait g_CLOCKS_PER_BIT to sample in the middle of the data
-                if r_TimeCount < (g_CLOCKS_PER_BIT -1)
-                then
-                    r_TimeCount <= r_TimeCount + 1;
-                else
 
-                    r_TimeCount <= 0;
+                when STARTING =>
 
-                    -- not all bits have been registered
-                    if r_Counter < 8
+                    -- wait one half of a bit period in order to align
+                    -- sampling each g_CLOCKS_PER_BIT to sample in the middle of
+                    -- data bit
+                    if r_TimeCount < ((g_CLOCKS_PER_BIT / 2) -1)
                     then
-                        -- make a sample
-                        r_Bits(r_Counter) <= i_UART_RX;
-                        r_Counter <= r_Counter + 1;
-
-                    -- all bits have been registered
+                        r_TimeCount <= r_TimeCount + 1;
                     else
-                        if i_UART_RX = '1'
+                        r_TimeCount <= 0;
+
+                        if i_UART_RX = '0'
                         then
-                            -- if we observe the stop bit
-                            r_State <= STOPPED;
-                            o_Bits_DV <= '1';
+                            r_State <= STARTED;
                         else
-                            -- if we don't observe the stop bit
                             r_State <= FAILED;
                         end if;
                     end if;
-                end if;
-            end if;
+
+                when FAILED =>
+
+                    o_Has_Failed <= '1';
+                    r_State <= STOPPED;
+
+                when STARTED =>
+
+                    -- wait g_CLOCKS_PER_BIT to sample in the middle of the data
+                    if r_TimeCount < (g_CLOCKS_PER_BIT -1)
+                    then
+                        r_TimeCount <= r_TimeCount + 1;
+                    else
+
+                        r_TimeCount <= 0;
+
+                        -- not all bits have been registered
+                        if r_Counter < 8
+                        then
+                            -- make a sample
+                            r_Bits(r_Counter) <= i_UART_RX;
+                            r_Counter <= r_Counter + 1;
+
+                        -- all bits have been registered
+                        else
+                            if i_UART_RX = '1'
+                            then
+                                -- if we observe the stop bit
+                                r_State <= STOPPED;
+                                o_Bits_DV <= '1';
+                            else
+                                -- if we don't observe the stop bit
+                                r_State <= FAILED;
+                            end if;
+                        end if;
+                    end if;
+            end case;
         end if;
     end process;
 
