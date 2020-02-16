@@ -33,7 +33,7 @@ architecture RTL of Debounce_Switch is
 begin
     
     p_Debounce : process (i_Clk) is
-    begin        
+    begin
         if rising_edge(i_Clk) then
             
             -- increment the counter when the i_Switch signal is different 
