@@ -73,6 +73,10 @@ architecture RTL of VGA is
 
     signal r_VGA_HSync : std_logic := '0';
     signal r_VGA_VSync : std_logic := '0';
+
+    signal r_VGA_HSync2 : std_logic := '0';
+    signal r_VGA_VSync2 : std_logic := '0';
+
     signal r_VGA_Red_0 : std_logic := '0';
     signal r_VGA_Red_1 : std_logic := '0';
     signal r_VGA_Red_2 : std_logic := '0';
@@ -82,6 +86,7 @@ architecture RTL of VGA is
     signal r_VGA_Blu_0 : std_logic := '0';
     signal r_VGA_Blu_1 : std_logic := '0';
     signal r_VGA_Blu_2 : std_logic := '0';
+
 begin
 
     VGA_Sync_Count_Inst : entity work.VGA_Sync_Count
@@ -95,22 +100,43 @@ begin
         o_row_idx => r_row_idx
     );
 
+    VGA_Sync_Pulses_Inst : entity work.VGA_Sync_Pulses
+    generic map (
+        g_ACTIVE_COLS => g_ACTIVE_COLS,
+        g_TOTAL_COLS  => g_TOTAL_COLS,
+        g_ACTIVE_ROWS => g_ACTIVE_ROWS,
+        g_TOTAL_ROWS  => g_TOTAL_ROWS
+
+    )
+    port map (
+        i_Clk       => i_Clk,
+        o_VGA_HSync => r_VGA_HSync,
+        o_VGA_VSync => r_VGA_VSync
+    );
+
     process (i_Clk) is
     begin
         if rising_edge(i_Clk)
         then
-            if col_cpt < (g_ACTIVE_COLS + g_FRONT_PORCH_COLS) or col_cpt >= (g_ACTIVE_COLS + g_FRONT_PORCH_COLS + g_SYNC_PULSE_COLS)
+
+            if r_VGA_HSync /= '1'
             then
-                r_VGA_HSync <= '1';
-            else
-                r_VGA_HSync <= '0';
+                if col_cpt < (g_ACTIVE_COLS + g_FRONT_PORCH_COLS) or col_cpt >= (g_ACTIVE_COLS + g_FRONT_PORCH_COLS + g_SYNC_PULSE_COLS)
+                then
+                    r_VGA_HSync2 <= '1';
+                else
+                    r_VGA_HSync2 <= r_VGA_HSync;
+                end if;
             end if;
 
-            if row_cpt < (g_ACTIVE_ROWS + g_FRONT_PORCH_ROWS) or row_cpt >= (g_ACTIVE_ROWS + g_FRONT_PORCH_ROWS + g_SYNC_PULSE_ROWS)
+            if r_VGA_VSync /= '1'
             then
-                r_VGA_VSync <= '1';
-            else
-                r_VGA_VSync <= '0';
+                if row_cpt < (g_ACTIVE_ROWS + g_FRONT_PORCH_ROWS) or row_cpt >= (g_ACTIVE_ROWS + g_FRONT_PORCH_ROWS + g_SYNC_PULSE_ROWS)
+                then
+                    r_VGA_VSync2 <= '1';
+                else
+                    r_VGA_VSync2 <= r_VGA_VSync;
+                end if;
             end if;
 
             if col_cpt < g_ACTIVE_COLS and row_cpt < g_ACTIVE_ROWS
@@ -155,16 +181,17 @@ begin
         end if;
     end process;
 
-    o_VGA_VSync <= r_VGA_VSync;
-    o_VGA_HSync <= r_VGA_HSync;
+    o_VGA_VSync <= r_VGA_VSync2;
+    o_VGA_HSync <= r_VGA_HSync2;
+
     o_VGA_Red_0 <= r_VGA_Red_0;
     o_VGA_Red_1 <= r_VGA_Red_1;
     o_VGA_Red_2 <= r_VGA_Red_2;
     o_VGA_Grn_0 <= r_VGA_Grn_0;
     o_VGA_Grn_1 <= r_VGA_Grn_1;
     o_VGA_Grn_2 <= r_VGA_Grn_2;
-    o_VGA_Blu_0 <= r_VGA_Grn_0;
-    o_VGA_Blu_1 <= r_VGA_Grn_1;
-    o_VGA_Blu_2 <= r_VGA_Grn_2;
+    o_VGA_Blu_0 <= r_VGA_Blu_0;
+    o_VGA_Blu_1 <= r_VGA_Blu_1;
+    o_VGA_Blu_2 <= r_VGA_Blu_2;
 end
 architecture RTL;
