@@ -93,7 +93,7 @@ begin
                 r_VGA_HSync <= '0';
             end if;
 
-            if row_cpt < (g_ACTIVE_ROWS + 10) or row_cpt >= (g_ACTIVE_ROWS + 10 + 2)
+            if row_cpt < (g_ACTIVE_ROWS + g_FRONT_PORCH_ROWS) or row_cpt >= (g_ACTIVE_ROWS + g_FRONT_PORCH_ROWS + g_SYNC_PULSE_ROWS)
             then
                 r_VGA_VSync <= '1';
             else
@@ -111,7 +111,7 @@ begin
                 r_VGA_Grn_2 <= '0';
             end if;
 
-            if col_cpt < (g_TOTAL_COLS-1)
+            if col_cpt < (g_TOTAL_COLS - 1)
             then
                 new_col <= '0';
                 col_cpt <= col_cpt + 1;
@@ -121,7 +121,7 @@ begin
                 row_cpt <= (row_cpt + 1) MOD g_TOTAL_ROWS;
             end if;
 
-            if row_cpt < (g_TOTAL_ROWS-1)
+            if row_cpt < (g_TOTAL_ROWS - 1)
             then
                 new_row <= '0';
             else
