@@ -65,6 +65,9 @@ architecture RTL of VGA is
     constant g_TOTAL_ROWS : integer := g_ACTIVE_ROWS + g_FRONT_PORCH_ROWS +
                                         g_SYNC_PULSE_ROWS + g_BACK_PORCH_ROWS;
 
+    signal r_col_idx : integer range 0 to g_TOTAL_COLS := 0;
+    signal r_row_idx : integer range 0 to g_TOTAL_ROWS := 0;
+
     signal col_cpt : integer range 0 to g_TOTAL_COLS := 0;
     signal row_cpt : integer range 0 to g_TOTAL_ROWS := 0;
 
@@ -80,6 +83,17 @@ architecture RTL of VGA is
     signal r_VGA_Blu_1 : std_logic := '0';
     signal r_VGA_Blu_2 : std_logic := '0';
 begin
+
+    VGA_Sync_Count_Inst : entity work.VGA_Sync_Count
+    generic map (
+        g_TOTAL_COLS  => g_TOTAL_COLS,
+        g_TOTAL_ROWS  => g_TOTAL_ROWS
+    )
+    port map (
+        i_Clk     => i_Clk,
+        o_col_idx => r_col_idx,
+        o_row_idx => r_row_idx
+    );
 
     process (i_Clk) is
     begin
@@ -101,10 +115,30 @@ begin
 
             if col_cpt < g_ACTIVE_COLS and row_cpt < g_ACTIVE_ROWS
             then
-                r_VGA_Grn_0 <= '1';
-                r_VGA_Grn_1 <= '1';
-                r_VGA_Grn_2 <= '1';
+                if r_col_idx >= 1 and r_col_idx <= 2
+                then
+                    r_VGA_Red_0 <= '1';
+                    r_VGA_Red_1 <= '1';
+                    r_VGA_Red_2 <= '1';
+
+                    r_VGA_Grn_0 <= '0';
+                    r_VGA_Grn_1 <= '0';
+                    r_VGA_Grn_2 <= '0';
+                else
+                    r_VGA_Red_0 <= '0';
+                    r_VGA_Red_1 <= '0';
+                    r_VGA_Red_2 <= '0';
+
+                    r_VGA_Grn_0 <= '1';
+                    r_VGA_Grn_1 <= '1';
+                    r_VGA_Grn_2 <= '1';
+                end if;
+
             else
+                r_VGA_Red_0 <= '0';
+                r_VGA_Red_1 <= '0';
+                r_VGA_Red_2 <= '0';
+
                 r_VGA_Grn_0 <= '0';
                 r_VGA_Grn_1 <= '0';
                 r_VGA_Grn_2 <= '0';
