@@ -119,26 +119,6 @@ begin
         if rising_edge(i_Clk)
         then
 
-            if r_VGA_HSync /= '1'
-            then
-                if col_cpt < (g_ACTIVE_COLS + g_FRONT_PORCH_COLS) or col_cpt >= (g_ACTIVE_COLS + g_FRONT_PORCH_COLS + g_SYNC_PULSE_COLS)
-                then
-                    r_VGA_HSync2 <= '1';
-                else
-                    r_VGA_HSync2 <= r_VGA_HSync;
-                end if;
-            end if;
-
-            if r_VGA_VSync /= '1'
-            then
-                if row_cpt < (g_ACTIVE_ROWS + g_FRONT_PORCH_ROWS) or row_cpt >= (g_ACTIVE_ROWS + g_FRONT_PORCH_ROWS + g_SYNC_PULSE_ROWS)
-                then
-                    r_VGA_VSync2 <= '1';
-                else
-                    r_VGA_VSync2 <= r_VGA_VSync;
-                end if;
-            end if;
-
             if col_cpt < g_ACTIVE_COLS and row_cpt < g_ACTIVE_ROWS
             then
                 if r_col_idx >= 1 and r_col_idx <= 2
@@ -147,17 +127,17 @@ begin
                     r_VGA_Red_1 <= '1';
                     r_VGA_Red_2 <= '1';
 
-                    r_VGA_Grn_0 <= '0';
-                    r_VGA_Grn_1 <= '0';
-                    r_VGA_Grn_2 <= '0';
+                    r_VGA_Blu_0 <= '0';
+                    r_VGA_Blu_1 <= '0';
+                    r_VGA_Blu_2 <= '0';
                 else
                     r_VGA_Red_0 <= '0';
                     r_VGA_Red_1 <= '0';
                     r_VGA_Red_2 <= '0';
 
-                    r_VGA_Grn_0 <= '1';
-                    r_VGA_Grn_1 <= '1';
-                    r_VGA_Grn_2 <= '1';
+                    r_VGA_Blu_0 <= '1';
+                    r_VGA_Blu_1 <= '1';
+                    r_VGA_Blu_2 <= '1';
                 end if;
 
             else
@@ -165,9 +145,9 @@ begin
                 r_VGA_Red_1 <= '0';
                 r_VGA_Red_2 <= '0';
 
-                r_VGA_Grn_0 <= '0';
-                r_VGA_Grn_1 <= '0';
-                r_VGA_Grn_2 <= '0';
+                r_VGA_Blu_0 <= '0';
+                r_VGA_Blu_1 <= '0';
+                r_VGA_Blu_2 <= '0';
             end if;
 
             if col_cpt < (g_TOTAL_COLS - 1)
@@ -180,6 +160,29 @@ begin
 
         end if;
     end process;
+
+
+    VGA_Sync_Porch_Inst : entity work.VGA_Sync_Porch
+    generic map (
+        g_ACTIVE_COLS      => g_ACTIVE_COLS,
+        g_TOTAL_COLS       => g_TOTAL_COLS,
+        g_FRONT_PORCH_COLS => g_FRONT_PORCH_COLS,
+        g_SYNC_PULSE_COLS  => g_SYNC_PULSE_COLS,
+        g_BACK_PORCH_COLS  => g_BACK_PORCH_COLS,
+
+        g_ACTIVE_ROWS      => g_ACTIVE_ROWS,
+        g_TOTAL_ROWS       => g_TOTAL_ROWS,
+        g_FRONT_PORCH_ROWS => g_FRONT_PORCH_ROWS,
+        g_SYNC_PULSE_ROWS  => g_SYNC_PULSE_ROWS,
+        g_BACK_PORCH_ROWS  => g_BACK_PORCH_ROWS
+    )
+    port map (
+        i_Clk       => i_Clk,
+        i_VGA_HSync => r_VGA_HSync,
+        i_VGA_VSync => r_VGA_VSync,
+        o_VGA_HSync => r_VGA_HSync2,
+        o_VGA_VSync => r_VGA_VSync2
+    );
 
     o_VGA_VSync <= r_VGA_VSync2;
     o_VGA_HSync <= r_VGA_HSync2;
