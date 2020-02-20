@@ -60,9 +60,14 @@ end entity VGA;
 
 
 architecture RTL of VGA is
+    constant g_TOTAL_COLS : integer := g_ACTIVE_COLS + g_FRONT_PORCH_COLS +
+                                        g_SYNC_PULSE_COLS + g_BACK_PORCH_COLS;
+    constant g_TOTAL_ROWS : integer := g_ACTIVE_ROWS + g_FRONT_PORCH_ROWS +
+                                        g_SYNC_PULSE_ROWS + g_BACK_PORCH_ROWS;
 
-    signal col_cpt : integer := 0;
-    signal row_cpt : integer := 0;
+    signal col_cpt : integer range 0 to g_TOTAL_COLS := 0;
+    signal row_cpt : integer range 0 to g_TOTAL_ROWS := 0;
+
     signal r_VGA_HSync : std_logic := '0';
     signal r_VGA_VSync : std_logic := '0';
     signal r_VGA_Red_0 : std_logic := '0';
@@ -74,12 +79,6 @@ architecture RTL of VGA is
     signal r_VGA_Blu_0 : std_logic := '0';
     signal r_VGA_Blu_1 : std_logic := '0';
     signal r_VGA_Blu_2 : std_logic := '0';
-    signal new_col : std_logic := '0';
-    signal new_row : std_logic := '0';
-    constant g_TOTAL_COLS : integer := g_ACTIVE_COLS + g_FRONT_PORCH_COLS +
-                                        g_SYNC_PULSE_COLS + g_BACK_PORCH_COLS;
-    constant g_TOTAL_ROWS : integer := g_ACTIVE_ROWS + g_FRONT_PORCH_ROWS +
-                                        g_SYNC_PULSE_ROWS + g_BACK_PORCH_ROWS;
 begin
 
     process (i_Clk) is
@@ -113,19 +112,10 @@ begin
 
             if col_cpt < (g_TOTAL_COLS - 1)
             then
-                new_col <= '0';
                 col_cpt <= col_cpt + 1;
             else
-                new_col <= '1';
                 col_cpt <= 0;
                 row_cpt <= (row_cpt + 1) MOD g_TOTAL_ROWS;
-            end if;
-
-            if row_cpt < (g_TOTAL_ROWS - 1)
-            then
-                new_row <= '0';
-            else
-                new_row <= '1';
             end if;
 
         end if;
