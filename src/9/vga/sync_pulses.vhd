@@ -13,17 +13,19 @@ entity VGA_Sync_Pulses is
     port (
         i_Clk       : in std_logic;
         o_VGA_HSync : out std_logic;
-        o_VGA_VSync : out std_logic
+        o_VGA_VSync : out std_logic;
+        o_col_cpt   : out integer range 0 to g_TOTAL_COLS := 0;
+        o_row_cpt   : out integer range 0 to g_TOTAL_ROWS := 0
     );
 
 end entity VGA_Sync_Pulses;
 
 architecture RTL of VGA_Sync_Pulses is
 
-    signal r_col_cpt : integer range 0 to g_TOTAL_COLS := 0;
-    signal r_row_cpt : integer range 0 to g_TOTAL_ROWS := 0;
     signal r_VGA_HSync : std_logic := '0';
     signal r_VGA_VSync : std_logic := '0';
+    signal r_col_cpt   : integer range 0 to g_TOTAL_COLS := 0;
+    signal r_row_cpt   : integer range 0 to g_TOTAL_ROWS := 0;
 
 begin
 
@@ -58,5 +60,7 @@ begin
 
     o_VGA_VSync <= r_VGA_VSync;
     o_VGA_HSync <= r_VGA_HSync;
+    o_row_cpt <= r_row_cpt;
+    o_col_cpt <= r_col_cpt;
 end
 architecture RTL;
