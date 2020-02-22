@@ -89,17 +89,6 @@ architecture RTL of VGA is
 
 begin
 
-    VGA_Sync_Count_Inst : entity work.VGA_Sync_Count
-    generic map (
-        g_TOTAL_COLS  => g_TOTAL_COLS,
-        g_TOTAL_ROWS  => g_TOTAL_ROWS
-    )
-    port map (
-        i_Clk     => i_Clk,
-        o_col_idx => r_col_idx,
-        o_row_idx => r_row_idx
-    );
-
     VGA_Sync_Pulses_Inst : entity work.VGA_Sync_Pulses
     generic map (
         g_ACTIVE_COLS => g_ACTIVE_COLS,
@@ -111,7 +100,9 @@ begin
     port map (
         i_Clk       => i_Clk,
         o_VGA_HSync => r_VGA_HSync,
-        o_VGA_VSync => r_VGA_VSync
+        o_VGA_VSync => r_VGA_VSync,
+        o_col_cpt   => r_col_idx,
+        o_row_cpt   => r_row_idx
     );
 
     process (i_Clk) is
