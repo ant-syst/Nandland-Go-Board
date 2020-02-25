@@ -12,7 +12,7 @@ entity VGA_Test_Pattern_Generator is
         i_Clk       : in std_logic;
         i_col_idx   : in integer;
         i_row_idx   : in integer;
-        i_pattern   : integer range 0 to 4;
+        i_pattern   : in positive range 0 to 4;
 
         o_VGA_Red_0 : out std_logic;
         o_VGA_Red_1 : out std_logic;

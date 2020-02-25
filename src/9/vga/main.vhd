@@ -16,8 +16,14 @@ entity VGA is
     );
     port (
         i_Clk       : in std_logic;
+
+        i_UART_RX   : in std_logic;
+
+        o_UART_TX   : out std_logic;
+
         o_VGA_HSync : out std_logic;
         o_VGA_VSync : out std_logic;
+
         o_VGA_Red_0 : out std_logic;
         o_VGA_Red_1 : out std_logic;
         o_VGA_Red_2 : out std_logic;
@@ -68,6 +74,10 @@ architecture RTL of VGA is
     signal r_col_idx : integer range 0 to g_TOTAL_COLS := 0;
     signal r_row_idx : integer range 0 to g_TOTAL_ROWS := 0;
 
+    signal r_UART_TX    : std_logic := '0';
+    signal r_Bits       : std_logic_vector(7 downto 0) := "00110101";
+    signal r_Bits_DV    : std_logic := '0';
+    signal r_Has_Failed : std_logic := '0';
 
     signal r_VGA_HSync : std_logic := '0';
     signal r_VGA_VSync : std_logic := '0';
@@ -76,6 +86,29 @@ architecture RTL of VGA is
     signal r_VGA_VSync2 : std_logic := '0';
 
 begin
+
+    UART_Receiver_Inst : entity work.UART_Receiver
+    generic map (
+        g_CLOCKS_PER_BIT => 217
+    )
+    port map (
+        i_Clk        => i_Clk,
+        i_UART_RX    => i_UART_RX,
+        o_Bits       => r_Bits,
+        o_Bits_DV    => r_Bits_DV,
+        o_Has_Failed => r_Has_Failed
+    );
+
+    UART_Transmitter_Inst : entity work.UART_Transmitter
+    generic map (
+        g_CLOCKS_PER_BIT => 217
+    )
+    port map (
+        i_Bits    => r_Bits,
+        i_Bits_DV => r_Bits_DV,
+        i_Clk     => i_Clk,
+        o_UART_TX => r_UART_TX
+    );
 
     VGA_Sync_Pulses_Inst : entity work.VGA_Sync_Pulses
     generic map (
@@ -103,7 +136,7 @@ begin
         i_Clk       => i_Clk,
         i_col_idx   => r_col_idx,
         i_row_idx   => r_row_idx,
-        i_pattern   => 3,
+        i_pattern   => to_integer(unsigned(r_Bits)),
         o_VGA_Red_0 => o_VGA_Red_0,
         o_VGA_Red_1 => o_VGA_Red_1,
         o_VGA_Red_2 => o_VGA_Red_2,
@@ -139,6 +172,7 @@ begin
         o_VGA_VSync => r_VGA_VSync2
     );
 
+    o_UART_TX   <= r_UART_TX;
     o_VGA_VSync <= r_VGA_VSync2;
     o_VGA_HSync <= r_VGA_HSync2;
 end
