@@ -103,6 +103,7 @@ begin
         i_Clk       => i_Clk,
         i_col_idx   => r_col_idx,
         i_row_idx   => r_row_idx,
+        i_pattern   => 3,
         o_VGA_Red_0 => o_VGA_Red_0,
         o_VGA_Red_1 => o_VGA_Red_1,
         o_VGA_Red_2 => o_VGA_Red_2,
@@ -113,7 +114,6 @@ begin
         o_VGA_Blu_1 => o_VGA_Blu_1,
         o_VGA_Blu_2 => o_VGA_Blu_2
     );
-
 
     VGA_Sync_Porch_Inst : entity work.VGA_Sync_Porch
     generic map (

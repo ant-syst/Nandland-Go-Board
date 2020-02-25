@@ -9,9 +9,10 @@ entity VGA_Test_Pattern_Generator is
         g_ACTIVE_ROWS : integer
     );
     port (
-        i_Clk     : in std_logic;
-        i_col_idx : in integer;
-        i_row_idx : in integer;
+        i_Clk       : in std_logic;
+        i_col_idx   : in integer;
+        i_row_idx   : in integer;
+        i_pattern   : integer range 0 to 4;
 
         o_VGA_Red_0 : out std_logic;
         o_VGA_Red_1 : out std_logic;
@@ -37,6 +38,79 @@ architecture RTL of VGA_Test_Pattern_Generator is
     signal r_VGA_Blu_0 : std_logic := '0';
     signal r_VGA_Blu_1 : std_logic := '0';
     signal r_VGA_Blu_2 : std_logic := '0';
+
+    procedure Pattern0 is
+    begin
+        r_VGA_Blu_0 <= '1';
+        r_VGA_Blu_1 <= '1';
+        r_VGA_Blu_2 <= '1';
+
+        r_VGA_Red_0 <= '0';
+        r_VGA_Red_1 <= '0';
+        r_VGA_Red_2 <= '0';
+
+        r_VGA_Grn_0 <= '0';
+        r_VGA_Grn_1 <= '0';
+        r_VGA_Grn_2 <= '0';
+    end procedure;
+
+    procedure Pattern1 is
+    begin
+        r_VGA_Blu_0 <= '0';
+        r_VGA_Blu_1 <= '0';
+        r_VGA_Blu_2 <= '0';
+
+        r_VGA_Red_0 <= '1';
+        r_VGA_Red_1 <= '1';
+        r_VGA_Red_2 <= '1';
+
+        r_VGA_Grn_0 <= '0';
+        r_VGA_Grn_1 <= '0';
+        r_VGA_Grn_2 <= '0';
+    end procedure;
+
+    procedure Pattern2 is
+    begin
+        r_VGA_Blu_0 <= '1';
+        r_VGA_Blu_1 <= '1';
+        r_VGA_Blu_2 <= '1';
+
+        r_VGA_Red_0 <= '0';
+        r_VGA_Red_1 <= '0';
+        r_VGA_Red_2 <= '0';
+
+        r_VGA_Grn_0 <= '0';
+        r_VGA_Grn_1 <= '0';
+        r_VGA_Grn_2 <= '0';
+    end procedure;
+
+    procedure Pattern3 is
+    begin
+        r_VGA_Blu_0 <= '0';
+        r_VGA_Blu_1 <= '0';
+        r_VGA_Blu_2 <= '0';
+
+        r_VGA_Red_0 <= '0';
+        r_VGA_Red_1 <= '0';
+        r_VGA_Red_2 <= '0';
+
+        r_VGA_Grn_0 <= '1';
+        r_VGA_Grn_1 <= '1';
+        r_VGA_Grn_2 <= '1';
+    end procedure;
+
+    procedure PatternDefaults is
+    begin
+        r_VGA_Blu_0 <= '0';
+        r_VGA_Blu_1 <= '0';
+        r_VGA_Blu_2 <= '0';
+        r_VGA_Red_0 <= '0';
+        r_VGA_Red_1 <= '0';
+        r_VGA_Red_2 <= '0';
+        r_VGA_Grn_0 <= '0';
+        r_VGA_Grn_1 <= '0';
+        r_VGA_Grn_2 <= '0';
+    end procedure;
 begin
 
     process (i_Clk) is
@@ -57,24 +131,19 @@ begin
                 r_VGA_Blu_1 <= '0';
                 r_VGA_Blu_2 <= '0';
             else
-                if i_col_idx >= 1 and i_col_idx <= 100 -- and i_row_idx = 1
-                then
-                    r_VGA_Red_0 <= '1';
-                    r_VGA_Red_1 <= '1';
-                    r_VGA_Red_2 <= '1';
+                case i_pattern is
+                    when 0 =>
+                        Pattern0;
+                    when 1 =>
+                        Pattern1;
+                    when 2 =>
+                        Pattern2;
+                    when 3 =>
+                        Pattern3;
+                    when others =>
+                        PatternDefaults;
+                end case;
 
-                    r_VGA_Blu_0 <= '0';
-                    r_VGA_Blu_1 <= '0';
-                    r_VGA_Blu_2 <= '0';
-                else
-                    r_VGA_Red_0 <= '0';
-                    r_VGA_Red_1 <= '0';
-                    r_VGA_Red_2 <= '0';
-
-                    r_VGA_Blu_0 <= '1';
-                    r_VGA_Blu_1 <= '1';
-                    r_VGA_Blu_2 <= '1';
-                end if;
             end if;
         end if;
     end process;
