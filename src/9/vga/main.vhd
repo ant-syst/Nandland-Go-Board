@@ -133,6 +133,8 @@ begin
         i_Clk       => i_Clk,
         i_VGA_HSync => r_VGA_HSync,
         i_VGA_VSync => r_VGA_VSync,
+        i_col_idx   => r_col_idx,
+        i_row_idx   => r_row_idx,
         o_VGA_HSync => r_VGA_HSync2,
         o_VGA_VSync => r_VGA_VSync2
     );
