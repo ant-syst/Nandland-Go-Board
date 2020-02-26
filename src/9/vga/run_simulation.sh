@@ -19,7 +19,7 @@ cd "$(dirname "$(readlink -f "$0")")"
 
 rm -f work-obj93.cf
 
-${GHDL_BIN} -a main.vhd
+${GHDL_BIN} -a sync_pulses.vhd
 ${GHDL_BIN} -a test_bench.vhd
 ${GHDL_BIN} -e VGA_TB
 ${GHDL_BIN} -r VGA_TB --vcd=test_bench.vcd
