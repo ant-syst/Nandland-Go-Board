@@ -22,8 +22,8 @@ end entity VGA_Sync_Pulses;
 
 architecture RTL of VGA_Sync_Pulses is
 
-    signal r_VGA_HSync : std_logic := '0';
-    signal r_VGA_VSync : std_logic := '0';
+    signal r_VGA_HSync : std_logic := '1';
+    signal r_VGA_VSync : std_logic := '1';
     signal r_col_cpt   : integer range 0 to g_TOTAL_COLS := 0;
     signal r_row_cpt   : integer range 0 to g_TOTAL_ROWS := 0;
 
@@ -58,9 +58,18 @@ begin
         end if;
     end process;
 
+    -- The affectation to r_VGA_HSync/r_VGA_VSync signal takes one clock cycle
+    -- to be visible. So we slow down our counters from one cycle to keep them
+    -- synchronized with the r_VGA_HSync/r_VGA_VSync signals.
+    process (i_Clk) is
+    begin
+        if rising_edge(i_Clk) then
+            o_row_cpt <= r_row_cpt;
+            o_col_cpt <= r_col_cpt;
+        end if;
+    end process;
+
     o_VGA_VSync <= r_VGA_VSync;
     o_VGA_HSync <= r_VGA_HSync;
-    o_row_cpt <= r_row_cpt;
-    o_col_cpt <= r_col_cpt;
 end
 architecture RTL;
