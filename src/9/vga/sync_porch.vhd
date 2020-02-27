@@ -25,7 +25,9 @@ entity VGA_Sync_Porch is
         i_Row_Idx : in integer;
 
         o_HSync   : out std_logic;
-        o_VSync   : out std_logic
+        o_VSync   : out std_logic;
+        o_Col_Idx : out integer;
+        o_Row_Idx : out integer
     );
 
 end entity VGA_Sync_Porch;
@@ -56,6 +58,11 @@ begin
             else
                 r_VSync <= i_VSync;
             end if;
+
+            -- Update index/row with 1 cycle of latency to keep them
+            -- synchronised with o_HSync/o_VSync signals
+            o_Col_Idx <= i_Col_Idx;
+            o_Row_Idx <= i_Row_Idx;
         end if;
     end process;
 

@@ -243,7 +243,9 @@ begin
         i_Col_Idx => r_Col_Idx,
         i_Row_Idx => r_Row_Idx,
         o_HSync   => r_Porch_HSync,
-        o_VSync   => r_Porch_VSync
+        o_VSync   => r_Porch_VSync,
+        o_Col_Idx => open,
+        o_Row_Idx => open
     );
 
     o_VGA_VSync <= r_Porch_VSync;
