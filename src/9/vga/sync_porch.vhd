@@ -18,21 +18,22 @@ entity VGA_Sync_Porch is
         g_BACK_PORCH_ROWS  : integer
     );
     port (
-        i_Clk       : in std_logic;
-        i_VGA_HSync : in std_logic;
-        i_VGA_VSync : in std_logic;
-        i_col_idx   : integer;
-        i_row_idx   : integer;
-        o_VGA_HSync : out std_logic;
-        o_VGA_VSync : out std_logic
+        i_Clk     : in std_logic;
+        i_HSync   : in std_logic;
+        i_VSync   : in std_logic;
+        i_Col_Idx : in integer;
+        i_Row_Idx : in integer;
+
+        o_HSync   : out std_logic;
+        o_VSync   : out std_logic
     );
 
 end entity VGA_Sync_Porch;
 
 architecture RTL of VGA_Sync_Porch is
 
-    signal r_VGA_HSync : std_logic := '0';
-    signal r_VGA_VSync : std_logic := '0';
+    signal r_HSync : std_logic := '0';
+    signal r_VSync : std_logic := '0';
 
 begin
 
@@ -43,23 +44,23 @@ begin
             if i_col_idx < (g_ACTIVE_COLS + g_FRONT_PORCH_COLS) or
                 i_col_idx >= (g_ACTIVE_COLS + g_FRONT_PORCH_COLS + g_SYNC_PULSE_COLS)
             then
-                r_VGA_HSync <= '1';
+                r_HSync <= '1';
             else
-                r_VGA_HSync <= i_VGA_HSync;
+                r_HSync <= i_HSync;
             end if;
 
             if i_row_idx < (g_ACTIVE_ROWS + g_FRONT_PORCH_ROWS) or
                 i_row_idx >= (g_ACTIVE_ROWS + g_FRONT_PORCH_ROWS + g_SYNC_PULSE_ROWS)
             then
-                r_VGA_VSync <= '1';
+                r_VSync <= '1';
             else
-                r_VGA_VSync <= i_VGA_VSync;
+                r_VSync <= i_VSync;
             end if;
         end if;
     end process;
 
-    o_VGA_VSync <= r_VGA_VSync;
-    o_VGA_HSync <= r_VGA_HSync;
+    o_VSync <= r_VSync;
+    o_HSync <= r_HSync;
 end
 architecture RTL;
 

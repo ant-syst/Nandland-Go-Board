@@ -86,8 +86,8 @@ architecture RTL of VGA is
     constant g_TOTAL_ROWS : integer := g_ACTIVE_ROWS + g_FRONT_PORCH_ROWS +
                                         g_SYNC_PULSE_ROWS + g_BACK_PORCH_ROWS;
 
-    signal r_col_idx : integer range 0 to g_TOTAL_COLS := 0;
-    signal r_row_idx : integer range 0 to g_TOTAL_ROWS := 0;
+    signal r_Col_Idx : integer range 0 to g_TOTAL_COLS := 0;
+    signal r_Row_Idx : integer range 0 to g_TOTAL_ROWS := 0;
 
     signal r_UART_TX    : std_logic := '0';
     signal r_Bits       : std_logic_vector(7 downto 0) := "00110101";
@@ -113,8 +113,8 @@ architecture RTL of VGA is
     signal r_VGA_HSync : std_logic := '0';
     signal r_VGA_VSync : std_logic := '0';
 
-    signal r_VGA_HSync2 : std_logic := '0';
-    signal r_VGA_VSync2 : std_logic := '0';
+    signal r_Porch_HSync : std_logic := '0';
+    signal r_Porch_VSync : std_logic := '0';
 
 begin
 
@@ -197,20 +197,19 @@ begin
         i_Clk       => i_Clk,
         o_VGA_HSync => r_VGA_HSync,
         o_VGA_VSync => r_VGA_VSync,
-        o_col_cpt   => r_col_idx,
-        o_row_cpt   => r_row_idx
+        o_col_cpt   => r_Col_Idx,
+        o_row_cpt   => r_Row_Idx
     );
 
     VGA_Test_Pattern_Generator_Inst : entity work.VGA_Test_Pattern_Generator
     generic map (
         g_ACTIVE_COLS  => g_ACTIVE_COLS,
         g_ACTIVE_ROWS  => g_ACTIVE_ROWS
-
     )
     port map (
         i_Clk       => i_Clk,
-        i_col_idx   => r_col_idx,
-        i_row_idx   => r_row_idx,
+        i_col_idx   => r_Col_Idx,
+        i_row_idx   => r_Row_Idx,
         i_pattern   => to_integer(unsigned(r_Bits)),
         o_VGA_Red_0 => o_VGA_Red_0,
         o_VGA_Red_1 => o_VGA_Red_1,
@@ -238,16 +237,16 @@ begin
         g_BACK_PORCH_ROWS  => g_BACK_PORCH_ROWS
     )
     port map (
-        i_Clk       => i_Clk,
-        i_VGA_HSync => r_VGA_HSync,
-        i_VGA_VSync => r_VGA_VSync,
-        i_col_idx   => r_col_idx,
-        i_row_idx   => r_row_idx,
-        o_VGA_HSync => r_VGA_HSync2,
-        o_VGA_VSync => r_VGA_VSync2
+        i_Clk     => i_Clk,
+        i_HSync   => r_VGA_HSync,
+        i_VSync   => r_VGA_VSync,
+        i_Col_Idx => r_Col_Idx,
+        i_Row_Idx => r_Row_Idx,
+        o_HSync   => r_Porch_HSync,
+        o_VSync   => r_Porch_VSync
     );
 
-    o_VGA_VSync <= r_VGA_VSync2;
-    o_VGA_HSync <= r_VGA_HSync2;
+    o_VGA_VSync <= r_Porch_VSync;
+    o_VGA_HSync <= r_Porch_HSync;
 end
 architecture RTL;
