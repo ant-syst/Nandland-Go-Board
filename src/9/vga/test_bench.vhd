@@ -35,8 +35,17 @@ architecture behave of VGA_TB is
 
     signal r_Porch_HSync    : std_logic := '0';
     signal r_Porch_VSync    : std_logic := '0';
-    signal r_Porch_Col_Idx  : integer := 0;
-    signal r_Porch_Row_Idx  : integer := 0;
+    signal r_Porch_Col_Idx  : natural := 0;
+    signal r_Porch_Row_Idx  : natural := 0;
+    signal r_Porch_Red_0    : std_logic := '0';
+    signal r_Porch_Red_1    : std_logic := '0';
+    signal r_Porch_Red_2    : std_logic := '0';
+    signal r_Porch_Grn_0    : std_logic := '0';
+    signal r_Porch_Grn_1    : std_logic := '0';
+    signal r_Porch_Grn_2    : std_logic := '0';
+    signal r_Porch_Blu_0    : std_logic := '0';
+    signal r_Porch_Blu_1    : std_logic := '0';
+    signal r_Porch_Blu_2    : std_logic := '0';
 
     signal r_Test_HSync     : std_logic := '0';
     signal r_Test_VSync     : std_logic := '0';
@@ -163,18 +172,35 @@ architecture behave of VGA_TB is
         );
     end Test_Sync_Pulses_Row;
 
-    procedure Test_Sync_Porch_Columns
-    (
+    procedure Test_Sync_Porch_Columns (
         i_Min_Col_Range    : in integer;
         i_Max_Col_Range    : in integer;
         i_Expected_HSync   : in std_logic;
         i_Expected_VSync   : in std_logic;
-        i_Expected_Row_Idx : in integer
+        i_Expected_Row_Idx : in integer;
+        i_Emit_VGA_Signals : in boolean
     )
     is
     begin
         for Col_Idx in i_Min_Col_Range to i_Max_Col_Range
         loop
+            if i_Emit_VGA_Signals
+            then
+                Test_RGB_Synchronization(
+                    r_Pattern, '1', '1',
+                    r_Porch_Red_0, r_Porch_Red_1, r_Porch_Red_2,
+                    r_Porch_Grn_0, r_Porch_Grn_1, r_Porch_Grn_2,
+                    r_Porch_Blu_0, r_Porch_Blu_1, r_Porch_Blu_2
+                );
+            else
+                Test_RGB_Synchronization(
+                    r_Pattern, '0', '0',
+                    r_Porch_Red_0, r_Porch_Red_1, r_Porch_Red_2,
+                    r_Porch_Grn_0, r_Porch_Grn_1, r_Porch_Grn_2,
+                    r_Porch_Blu_0, r_Porch_Blu_1, r_Porch_Blu_2
+                );
+            end if;
+
             assert r_Porch_VSync = i_Expected_VSync report "VSync pulses failed" severity note;
             assert r_Porch_Row_Idx = i_Expected_Row_Idx report "row_idx failed" severity note;
 
@@ -185,65 +211,40 @@ architecture behave of VGA_TB is
         end loop;
     end Test_Sync_Porch_Columns;
 
-    procedure Test_Sync_Porch_Row
-    (
-        i_Row_Idx        : in integer;
-        i_Expected_VSync : in std_logic
+    procedure Test_Sync_Porch_Row (
+        i_Row_Idx          : in integer;
+        i_Expected_VSync   : in std_logic;
+        i_Emit_VGA_Signals : in boolean
     )
     is
     begin
         Test_Sync_Porch_Columns(
             0,
             c_ACTIVE_COLS - 1,
-            '1', i_Expected_VSync, i_Row_Idx
+            '1', i_Expected_VSync, i_Row_Idx, i_Emit_VGA_Signals
         );
 
         Test_Sync_Porch_Columns(
             c_ACTIVE_COLS,
             c_ACTIVE_COLS + c_BACK_PORCH_COLS - 1,
-            '1', i_Expected_VSync, i_Row_Idx
+            '1', i_Expected_VSync, i_Row_Idx, false
         );
 
         Test_Sync_Porch_Columns(
             c_ACTIVE_COLS + c_BACK_PORCH_COLS,
             c_ACTIVE_COLS + c_BACK_PORCH_COLS + c_SYNC_PULSE_COLS - 1,
-            '0', i_Expected_VSync, i_Row_Idx
+            '0', i_Expected_VSync, i_Row_Idx, false
         );
 
         Test_Sync_Porch_Columns(
             c_ACTIVE_COLS + c_BACK_PORCH_COLS + c_SYNC_PULSE_COLS,
             c_TOTAL_COLS - 1,
-            '1', i_Expected_VSync, i_Row_Idx
+            '1', i_Expected_VSync, i_Row_Idx, false
         );
     end Test_Sync_Porch_Row;
 
-    procedure Test_Sync
-    (
-        i_Min_Col_Range    : in integer;
-        i_Max_Col_Range    : in integer;
-        i_HSync            : in std_logic;
-        i_VSync            : in std_logic;
-        i_Row_Idx          : in integer;
-        i_Expected_HSync   : in std_logic;
-        i_Expected_VSync   : in std_logic;
-        i_Expected_Row_Idx : in integer
-    )
-    is
-    begin
-        for Col_Idx in i_Min_Col_Range to i_Max_Col_Range
-        loop
-            assert i_VSync = i_Expected_VSync report "VSync failed" severity note;
-            assert i_Row_Idx = i_Expected_Row_Idx report "row_idx failed" severity note;
-
-            assert i_HSync = i_Expected_HSync report "HSync pulses failed" severity note;
-            assert Col_Idx = r_Porch_Col_Idx report "Col_Idx failed" severity note;
-
-            wait for c_CLOCK_PERIOD;
-        end loop;
-
-    end Test_Sync;
-
 begin
+
     r_Clock <= not r_Clock after c_CLOCK_PERIOD / 2;
 
     VGA_Sync_Pulses_Inst : entity work.VGA_Sync_Pulses
@@ -312,10 +313,30 @@ begin
         i_VSync   => r_Test_VSync,
         i_Col_Idx => r_Test_Col_Idx,
         i_Row_Idx => r_Test_Row_Idx,
+        i_Red_0   => r_Test_Red_0,
+        i_Red_1   => r_Test_Red_1,
+        i_Red_2   => r_Test_Red_2,
+        i_Grn_0   => r_Test_Grn_0,
+        i_Grn_1   => r_Test_Grn_1,
+        i_Grn_2   => r_Test_Grn_2,
+        i_Blu_0   => r_Test_Blu_0,
+        i_Blu_1   => r_Test_Blu_1,
+        i_Blu_2   => r_Test_Blu_2,
+
         o_HSync   => r_Porch_HSync,
         o_VSync   => r_Porch_VSync,
         o_Col_Idx => r_Porch_Col_Idx,
-        o_row_idx => r_Porch_Row_Idx
+        o_Row_Idx => r_Porch_Row_Idx,
+
+        o_Red_0   => r_Porch_Red_0,
+        o_Red_1   => r_Porch_Red_1,
+        o_Red_2   => r_Porch_Red_2,
+        o_Grn_0   => r_Porch_Grn_0,
+        o_Grn_1   => r_Porch_Grn_1,
+        o_Grn_2   => r_Porch_Grn_2,
+        o_Blu_0   => r_Porch_Blu_0,
+        o_Blu_1   => r_Porch_Blu_1,
+        o_Blu_2   => r_Porch_Blu_2
     );
 
     p_Test_Sync_Pulses : process is
@@ -393,28 +414,28 @@ begin
 
             for Row_Idx in 0 to (c_ACTIVE_ROWS - 1)
             loop
-                Test_Sync_Porch_Row(Row_Idx, '1');
+                Test_Sync_Porch_Row(Row_Idx, '1', true);
             end loop;
 
             for Row_Idx in
                 c_ACTIVE_ROWS to
                 (c_ACTIVE_ROWS + c_FRONT_PORCH_ROWS - 1)
             loop
-                Test_Sync_Porch_Row(Row_Idx, '1');
+                Test_Sync_Porch_Row(Row_Idx, '1', false);
             end loop;
 
             for Row_Idx in
                 (c_ACTIVE_ROWS + c_FRONT_PORCH_ROWS) to
                 (c_ACTIVE_ROWS + c_FRONT_PORCH_ROWS + c_SYNC_PULSE_ROWS - 1)
             loop
-                Test_Sync_Porch_Row(Row_Idx, '0');
+                Test_Sync_Porch_Row(Row_Idx, '0', false);
             end loop;
 
             for Row_Idx in
                 (c_ACTIVE_ROWS + c_FRONT_PORCH_ROWS + c_SYNC_PULSE_ROWS) to
                 (c_TOTAL_ROWS - 1)
             loop
-                Test_Sync_Porch_Row(Row_Idx, '1');
+                Test_Sync_Porch_Row(Row_Idx, '1', false);
             end loop;
 
         end loop;

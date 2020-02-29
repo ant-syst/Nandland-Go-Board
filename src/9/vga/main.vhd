@@ -129,8 +129,19 @@ architecture RTL of VGA is
     signal r_Test_Blu_1     : std_logic := '0';
     signal r_Test_Blu_2     : std_logic := '0';
 
-    signal r_Porch_HSync : std_logic := '0';
-    signal r_Porch_VSync : std_logic := '0';
+    signal r_Porch_HSync    : std_logic := '0';
+    signal r_Porch_VSync    : std_logic := '0';
+    signal r_Porch_Col_Idx  : natural := 0;
+    signal r_Porch_Row_Idx  : natural := 0;
+    signal r_Porch_Red_0    : std_logic := '0';
+    signal r_Porch_Red_1    : std_logic := '0';
+    signal r_Porch_Red_2    : std_logic := '0';
+    signal r_Porch_Grn_0    : std_logic := '0';
+    signal r_Porch_Grn_1    : std_logic := '0';
+    signal r_Porch_Grn_2    : std_logic := '0';
+    signal r_Porch_Blu_0    : std_logic := '0';
+    signal r_Porch_Blu_1    : std_logic := '0';
+    signal r_Porch_Blu_2    : std_logic := '0';
 
 begin
 
@@ -207,7 +218,6 @@ begin
         g_TOTAL_COLS  => g_TOTAL_COLS,
         g_ACTIVE_ROWS => g_ACTIVE_ROWS,
         g_TOTAL_ROWS  => g_TOTAL_ROWS
-
     )
     port map (
         i_Clk     => i_Clk,
@@ -264,17 +274,47 @@ begin
     )
     port map (
         i_Clk     => i_Clk,
-        i_HSync   => r_Pulses_HSync,
-        i_VSync   => r_Pulses_VSync,
-        i_Col_Idx => r_Col_Idx,
-        i_Row_Idx => r_Row_Idx,
+        i_HSync   => r_Test_HSync,
+        i_VSync   => r_Test_VSync,
+        i_Col_Idx => r_Test_Col_Idx,
+        i_Row_Idx => r_Test_Row_Idx,
+        i_Red_0   => r_Test_Red_0,
+        i_Red_1   => r_Test_Red_1,
+        i_Red_2   => r_Test_Red_2,
+        i_Grn_0   => r_Test_Grn_0,
+        i_Grn_1   => r_Test_Grn_1,
+        i_Grn_2   => r_Test_Grn_2,
+        i_Blu_0   => r_Test_Blu_0,
+        i_Blu_1   => r_Test_Blu_1,
+        i_Blu_2   => r_Test_Blu_2,
+
         o_HSync   => r_Porch_HSync,
         o_VSync   => r_Porch_VSync,
-        o_Col_Idx => open,
-        o_Row_Idx => open
+        o_Col_Idx => r_Porch_Col_Idx,
+        o_Row_Idx => r_Porch_Row_Idx,
+
+        o_Red_0   => r_Porch_Red_0,
+        o_Red_1   => r_Porch_Red_1,
+        o_Red_2   => r_Porch_Red_2,
+        o_Grn_0   => r_Porch_Grn_0,
+        o_Grn_1   => r_Porch_Grn_1,
+        o_Grn_2   => r_Porch_Grn_2,
+        o_Blu_0   => r_Porch_Blu_0,
+        o_Blu_1   => r_Porch_Blu_1,
+        o_Blu_2   => r_Porch_Blu_2
     );
 
     o_VGA_VSync <= r_Porch_VSync;
     o_VGA_HSync <= r_Porch_HSync;
+
+    o_VGA_Red_0 <= r_Porch_Red_0;
+    o_VGA_Red_1 <= r_Porch_Red_1;
+    o_VGA_Red_2 <= r_Porch_Red_2;
+    o_VGA_Grn_0 <= r_Porch_Grn_0;
+    o_VGA_Grn_1 <= r_Porch_Grn_1;
+    o_VGA_Grn_2 <= r_Porch_Grn_2;
+    o_VGA_Blu_0 <= r_Porch_Blu_0;
+    o_VGA_Blu_1 <= r_Porch_Blu_1;
+    o_VGA_Blu_2 <= r_Porch_Blu_2;
 end
 architecture RTL;
