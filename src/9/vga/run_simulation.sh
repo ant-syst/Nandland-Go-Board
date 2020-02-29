@@ -19,6 +19,7 @@ cd "$(dirname "$(readlink -f "$0")")"
 
 rm -f work-obj93.cf
 
+${GHDL_BIN} -a test_pattern_generator.vhd
 ${GHDL_BIN} -a sync_pulses.vhd
 ${GHDL_BIN} -a sync_porch.vhd
 ${GHDL_BIN} -a test_bench.vhd

@@ -242,7 +242,7 @@ begin
         end if;
     end process;
 
-    -- Keeoy synchronized input signals and RGB signals
+    -- Keep synchronized input signals and RGB signals
     process (i_Clk) is
     begin
         if rising_edge(i_Clk)
