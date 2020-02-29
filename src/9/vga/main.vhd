@@ -3,17 +3,6 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
 entity VGA is
-    generic (
-        g_ACTIVE_COLS      : integer := 640;
-        g_FRONT_PORCH_COLS : integer := 18;
-        g_SYNC_PULSE_COLS  : integer := 92;
-        g_BACK_PORCH_COLS  : integer := 50;
-
-        g_ACTIVE_ROWS      : integer := 480;
-        g_FRONT_PORCH_ROWS : integer := 10;
-        g_SYNC_PULSE_ROWS  : integer := 2;
-        g_BACK_PORCH_ROWS  : integer := 33
-    );
     port (
         i_Clk       : in std_logic;
 
@@ -81,13 +70,23 @@ end entity VGA;
 
 
 architecture RTL of VGA is
-    constant g_TOTAL_COLS : integer := g_ACTIVE_COLS + g_FRONT_PORCH_COLS +
-                                        g_SYNC_PULSE_COLS + g_BACK_PORCH_COLS;
-    constant g_TOTAL_ROWS : integer := g_ACTIVE_ROWS + g_FRONT_PORCH_ROWS +
-                                        g_SYNC_PULSE_ROWS + g_BACK_PORCH_ROWS;
 
-    signal r_Col_Idx : integer range 0 to g_TOTAL_COLS := 0;
-    signal r_Row_Idx : integer range 0 to g_TOTAL_ROWS := 0;
+    constant c_ACTIVE_COLS      : integer := 640;
+    constant c_FRONT_PORCH_COLS : integer := 18;
+    constant c_SYNC_PULSE_COLS  : integer := 92;
+    constant c_BACK_PORCH_COLS  : integer := 50;
+
+    constant c_ACTIVE_ROWS      : integer := 480;
+    constant c_FRONT_PORCH_ROWS : integer := 10;
+    constant c_SYNC_PULSE_ROWS  : integer := 2;
+    constant c_BACK_PORCH_ROWS  : integer := 33;
+    constant c_TOTAL_COLS : integer := c_ACTIVE_COLS + c_FRONT_PORCH_COLS +
+                                        c_SYNC_PULSE_COLS + c_BACK_PORCH_COLS;
+    constant c_TOTAL_ROWS : integer := c_ACTIVE_ROWS + c_FRONT_PORCH_ROWS +
+                                        c_SYNC_PULSE_ROWS + c_BACK_PORCH_ROWS;
+
+    --signal r_Col_Idx : integer range 0 to g_TOTAL_COLS := 0;
+    --signal r_Row_Idx : integer range 0 to g_TOTAL_ROWS := 0;
 
     signal r_UART_TX    : std_logic := '0';
     signal r_Bits       : std_logic_vector(7 downto 0) := "00110101";
@@ -214,10 +213,10 @@ begin
 
     VGA_Sync_Pulses_Inst : entity work.VGA_Sync_Pulses
     generic map (
-        g_ACTIVE_COLS => g_ACTIVE_COLS,
-        g_TOTAL_COLS  => g_TOTAL_COLS,
-        g_ACTIVE_ROWS => g_ACTIVE_ROWS,
-        g_TOTAL_ROWS  => g_TOTAL_ROWS
+        g_ACTIVE_COLS => c_ACTIVE_COLS,
+        g_TOTAL_COLS  => c_TOTAL_COLS,
+        g_ACTIVE_ROWS => c_ACTIVE_ROWS,
+        g_TOTAL_ROWS  => c_TOTAL_ROWS
     )
     port map (
         i_Clk     => i_Clk,
@@ -229,8 +228,8 @@ begin
 
     VGA_Test_Pattern_Generator_Inst : entity work.VGA_Test_Pattern_Generator
     generic map (
-        g_ACTIVE_COLS  => g_ACTIVE_COLS,
-        g_ACTIVE_ROWS  => g_ACTIVE_ROWS
+        g_ACTIVE_COLS  => c_ACTIVE_COLS,
+        g_ACTIVE_ROWS  => c_ACTIVE_ROWS
     )
     port map (
         i_Clk     => i_Clk,
@@ -260,17 +259,17 @@ begin
 
     VGA_Sync_Porch_Inst : entity work.VGA_Sync_Porch
     generic map (
-        g_ACTIVE_COLS      => g_ACTIVE_COLS,
-        g_TOTAL_COLS       => g_TOTAL_COLS,
-        g_FRONT_PORCH_COLS => g_FRONT_PORCH_COLS,
-        g_SYNC_PULSE_COLS  => g_SYNC_PULSE_COLS,
-        g_BACK_PORCH_COLS  => g_BACK_PORCH_COLS,
+        g_ACTIVE_COLS      => c_ACTIVE_COLS,
+        g_TOTAL_COLS       => c_TOTAL_COLS,
+        g_FRONT_PORCH_COLS => c_FRONT_PORCH_COLS,
+        g_SYNC_PULSE_COLS  => c_SYNC_PULSE_COLS,
+        g_BACK_PORCH_COLS  => c_BACK_PORCH_COLS,
 
-        g_ACTIVE_ROWS      => g_ACTIVE_ROWS,
-        g_TOTAL_ROWS       => g_TOTAL_ROWS,
-        g_FRONT_PORCH_ROWS => g_FRONT_PORCH_ROWS,
-        g_SYNC_PULSE_ROWS  => g_SYNC_PULSE_ROWS,
-        g_BACK_PORCH_ROWS  => g_BACK_PORCH_ROWS
+        g_ACTIVE_ROWS      => c_ACTIVE_ROWS,
+        g_TOTAL_ROWS       => c_TOTAL_ROWS,
+        g_FRONT_PORCH_ROWS => c_FRONT_PORCH_ROWS,
+        g_SYNC_PULSE_ROWS  => c_SYNC_PULSE_ROWS,
+        g_BACK_PORCH_ROWS  => c_BACK_PORCH_ROWS
     )
     port map (
         i_Clk     => i_Clk,
