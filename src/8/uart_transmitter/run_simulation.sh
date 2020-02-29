@@ -19,9 +19,7 @@ cd "$(dirname "$(readlink -f "$0")")"
 
 rm -f work-obj93.cf
 
-${GHDL_BIN} -a debounce.vhd
 ${GHDL_BIN} -a uart_transmitter.vhd
-${GHDL_BIN} -a main.vhd
 ${GHDL_BIN} -a test_bench.vhd
 ${GHDL_BIN} -e UART_TB
 ${GHDL_BIN} -r UART_TB --vcd=test_bench.vcd

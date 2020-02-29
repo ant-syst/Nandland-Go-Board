@@ -24,7 +24,7 @@ architecture RTL of UART_Transmitter is
     signal r_UART_TX     : std_logic := '1';
     signal r_Clock_Count : integer range 0 to 1000 := 0;
     signal r_Bits_Index  : integer range 0 to 8 := 0;
-    signal r_Bits        : std_logic_vector(7 downto 0);
+    signal r_Bits        : std_logic_vector(7 downto 0) := "00000000";
 
 begin
 
