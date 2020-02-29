@@ -27,5 +27,5 @@ ${GHDL_BIN} -r UART_TB --vcd=test_bench.vcd
 
 if [[ "${run_gtkwave}" == 1 ]]
 then
-    gtkwave testbench.vcd &
+    gtkwave test_bench.vcd &
 fi
