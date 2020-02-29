@@ -115,6 +115,20 @@ architecture RTL of VGA is
     signal r_Pulses_Col_Idx : natural := 0;
     signal r_Pulses_Row_Idx : natural := 0;
 
+    signal r_Test_HSync     : std_logic := '0';
+    signal r_Test_VSync     : std_logic := '0';
+    signal r_Test_Col_Idx   : natural := 0;
+    signal r_Test_Row_Idx   : natural := 0;
+    signal r_Test_Red_0     : std_logic := '0';
+    signal r_Test_Red_1     : std_logic := '0';
+    signal r_Test_Red_2     : std_logic := '0';
+    signal r_Test_Grn_0     : std_logic := '0';
+    signal r_Test_Grn_1     : std_logic := '0';
+    signal r_Test_Grn_2     : std_logic := '0';
+    signal r_Test_Blu_0     : std_logic := '0';
+    signal r_Test_Blu_1     : std_logic := '0';
+    signal r_Test_Blu_2     : std_logic := '0';
+
     signal r_Porch_HSync : std_logic := '0';
     signal r_Porch_VSync : std_logic := '0';
 
@@ -209,19 +223,29 @@ begin
         g_ACTIVE_ROWS  => g_ACTIVE_ROWS
     )
     port map (
-        i_Clk       => i_Clk,
-        i_col_idx   => r_Pulses_Col_Idx,
-        i_row_idx   => r_Pulses_Row_Idx,
-        i_pattern   => to_integer(unsigned(r_Bits)),
-        o_VGA_Red_0 => o_VGA_Red_0,
-        o_VGA_Red_1 => o_VGA_Red_1,
-        o_VGA_Red_2 => o_VGA_Red_2,
-        o_VGA_Grn_0 => o_VGA_Grn_0,
-        o_VGA_Grn_1 => o_VGA_Grn_1,
-        o_VGA_Grn_2 => o_VGA_Grn_2,
-        o_VGA_Blu_0 => o_VGA_Blu_0,
-        o_VGA_Blu_1 => o_VGA_Blu_1,
-        o_VGA_Blu_2 => o_VGA_Blu_2
+        i_Clk     => i_Clk,
+
+        i_pattern => to_integer(unsigned(r_Bits)),
+
+        i_HSync   => r_Pulses_HSync,
+        i_VSync   => r_Pulses_VSync,
+        i_Col_Idx => r_Pulses_Col_Idx,
+        i_Row_Idx => r_Pulses_Row_Idx,
+
+        o_HSync   => r_Test_HSync,
+        o_VSync   => r_Test_VSync,
+        o_Col_Idx => r_Test_Col_Idx,
+        o_Row_Idx => r_Test_Row_Idx,
+
+        o_Red_0   => r_Test_Red_0,
+        o_Red_1   => r_Test_Red_1,
+        o_Red_2   => r_Test_Red_2,
+        o_Grn_0   => r_Test_Grn_0,
+        o_Grn_1   => r_Test_Grn_1,
+        o_Grn_2   => r_Test_Grn_2,
+        o_Blu_0   => r_Test_Blu_0,
+        o_Blu_1   => r_Test_Blu_1,
+        o_Blu_2   => r_Test_Blu_2
     );
 
     VGA_Sync_Porch_Inst : entity work.VGA_Sync_Porch
