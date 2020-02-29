@@ -11,65 +11,65 @@ entity VGA_Sync_Pulses is
         g_TOTAL_ROWS  : integer
     );
     port (
-        i_Clk       : in std_logic;
-        o_VGA_HSync : out std_logic;
-        o_VGA_VSync : out std_logic;
-        o_col_cpt   : out integer range 0 to g_TOTAL_COLS := 0;
-        o_row_cpt   : out integer range 0 to g_TOTAL_ROWS := 0
+        i_Clk     : in std_logic;
+        o_HSync   : out std_logic;
+        o_VSync   : out std_logic;
+        o_Col_Idx : out integer range 0 to g_TOTAL_COLS := 0;
+        o_Row_Idx : out integer range 0 to g_TOTAL_COLS := 0
     );
 
 end entity VGA_Sync_Pulses;
 
 architecture RTL of VGA_Sync_Pulses is
 
-    signal r_VGA_HSync : std_logic := '1';
-    signal r_VGA_VSync : std_logic := '1';
-    signal r_col_cpt   : integer range 0 to g_TOTAL_COLS := 0;
-    signal r_row_cpt   : integer range 0 to g_TOTAL_ROWS := 0;
+    signal r_HSync   : std_logic := '1';
+    signal r_VSync   : std_logic := '1';
+    signal r_Col_Idx : integer range 0 to g_TOTAL_COLS := 0;
+    signal r_Row_Idx : integer range 0 to g_TOTAL_ROWS := 0;
 
 begin
-
     process (i_Clk) is
     begin
         if rising_edge(i_Clk)
         then
-            if r_col_cpt < g_ACTIVE_COLS
+            if r_Col_Idx < g_ACTIVE_COLS
             then
-                r_VGA_HSync <= '1';
+                r_HSync <= '1';
             else
-                r_VGA_HSync <= '0';
+                r_HSync <= '0';
             end if;
 
-            if r_row_cpt < g_ACTIVE_ROWS
+            if r_Row_Idx < g_ACTIVE_ROWS
             then
-                r_VGA_VSync <= '1';
+                r_VSync <= '1';
             else
-                r_VGA_VSync <= '0';
+                r_VSync <= '0';
             end if;
 
-            if r_col_cpt < (g_TOTAL_COLS - 1)
+            if r_Col_Idx < (g_TOTAL_COLS - 1)
             then
-                r_col_cpt <= r_col_cpt + 1;
+                r_Col_Idx <= r_Col_Idx + 1;
             else
-                r_col_cpt <= 0;
-                r_row_cpt <= (r_row_cpt + 1) MOD g_TOTAL_ROWS;
+                r_Col_Idx <= 0;
+                r_Row_Idx <= (r_Row_Idx + 1) MOD g_TOTAL_ROWS;
             end if;
 
         end if;
     end process;
 
     -- The affectation to r_VGA_HSync/r_VGA_VSync signal takes one clock cycle
-    -- to be visible. So we slow down our counters from one cycle to keep them
+    -- to be visible. So we slowdown our counters from one cycle to keep them
     -- synchronized with the r_VGA_HSync/r_VGA_VSync signals.
     process (i_Clk) is
     begin
-        if rising_edge(i_Clk) then
-            o_row_cpt <= r_row_cpt;
-            o_col_cpt <= r_col_cpt;
+        if rising_edge(i_Clk)
+        then
+            o_Row_Idx <= r_Row_Idx;
+            o_Col_Idx <= r_Col_Idx;
         end if;
     end process;
 
-    o_VGA_VSync <= r_VGA_VSync;
-    o_VGA_HSync <= r_VGA_HSync;
+    o_VSync <= r_VSync;
+    o_HSync <= r_HSync;
 end
 architecture RTL;

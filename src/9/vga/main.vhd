@@ -110,8 +110,10 @@ architecture RTL of VGA is
     signal w_Segment2_F : std_logic := '0';
     signal w_Segment2_G : std_logic := '0';
 
-    signal r_VGA_HSync : std_logic := '0';
-    signal r_VGA_VSync : std_logic := '0';
+    signal r_Pulses_HSync   : std_logic := '0';
+    signal r_Pulses_VSync   : std_logic := '0';
+    signal r_Pulses_Col_Idx : natural := 0;
+    signal r_Pulses_Row_Idx : natural := 0;
 
     signal r_Porch_HSync : std_logic := '0';
     signal r_Porch_VSync : std_logic := '0';
@@ -194,11 +196,11 @@ begin
 
     )
     port map (
-        i_Clk       => i_Clk,
-        o_VGA_HSync => r_VGA_HSync,
-        o_VGA_VSync => r_VGA_VSync,
-        o_col_cpt   => r_Col_Idx,
-        o_row_cpt   => r_Row_Idx
+        i_Clk     => i_Clk,
+        o_HSync   => r_Pulses_HSync,
+        o_VSync   => r_Pulses_VSync,
+        o_Col_Idx => r_Pulses_Col_Idx,
+        o_Row_Idx => r_Pulses_Row_Idx
     );
 
     VGA_Test_Pattern_Generator_Inst : entity work.VGA_Test_Pattern_Generator
@@ -208,8 +210,8 @@ begin
     )
     port map (
         i_Clk       => i_Clk,
-        i_col_idx   => r_Col_Idx,
-        i_row_idx   => r_Row_Idx,
+        i_col_idx   => r_Pulses_Col_Idx,
+        i_row_idx   => r_Pulses_Row_Idx,
         i_pattern   => to_integer(unsigned(r_Bits)),
         o_VGA_Red_0 => o_VGA_Red_0,
         o_VGA_Red_1 => o_VGA_Red_1,
@@ -238,8 +240,8 @@ begin
     )
     port map (
         i_Clk     => i_Clk,
-        i_HSync   => r_VGA_HSync,
-        i_VSync   => r_VGA_VSync,
+        i_HSync   => r_Pulses_HSync,
+        i_VSync   => r_Pulses_VSync,
         i_Col_Idx => r_Col_Idx,
         i_Row_Idx => r_Row_Idx,
         o_HSync   => r_Porch_HSync,

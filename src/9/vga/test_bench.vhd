@@ -171,11 +171,11 @@ begin
         g_TOTAL_ROWS  => c_TOTAL_ROWS
     )
     port map (
-        i_Clk       => r_Clock,
-        o_VGA_HSync => r_Pulses_HSync,
-        o_VGA_VSync => r_Pulses_VSync,
-        o_col_cpt   => r_Pulses_Col_Idx,
-        o_row_cpt   => r_Pulses_Row_Idx
+        i_Clk     => r_Clock,
+        o_HSync   => r_Pulses_HSync,
+        o_VSync   => r_Pulses_VSync,
+        o_Col_Idx => r_Pulses_Col_Idx,
+        o_Row_Idx => r_Pulses_Row_Idx
     );
 
     VGA_Sync_Porch_Inst : entity work.VGA_Sync_Porch
